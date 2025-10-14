@@ -1,0 +1,88 @@
+# Enhanced Requirements for FortiGate Semantic Shield v7.0
+# ==========================================================
+# Advanced dependencies for enterprise-grade semantic intelligence
+
+# Core dependencies
+numpy>=1.21.0,<2.0.0
+scipy>=1.7.0,<2.0.0
+asyncio-mqtt>=0.11.0
+aiohttp>=3.8.0
+aiosqlite>=0.17.0
+cryptography>=3.4.0
+pydantic>=1.8.0
+
+# Advanced mathematics and optimization
+scikit-learn>=1.0.0
+scikit-optimize>=0.9.0
+sympy>=1.9.0
+networkx>=2.6.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Database and storage
+asyncpg>=0.24.0  # PostgreSQL async driver
+redis>=4.0.0
+pymongo>=4.0.0
+elasticsearch>=8.0.0
+
+# Security and authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.0
+oauthlib>=3.1.0
+
+# Monitoring and observability
+prometheus-client>=0.12.0
+structlog>=21.1.0
+opentelemetry-api>=1.9.0
+opentelemetry-sdk>=1.9.0
+
+# Business intelligence and analytics
+pandas>=1.4.0
+plotly>=5.6.0
+dash>=2.3.0
+jupyter>=1.0.0
+
+# Testing and quality assurance
+pytest>=7.0.0
+pytest-asyncio>=0.18.0
+pytest-cov>=3.0.0
+black>=22.0.0
+flake8>=4.0.0
+mypy>=0.950
+
+# API and web services
+fastapi>=0.75.0
+uvicorn[standard]>=0.17.0
+websockets>=10.0
+
+# Configuration and deployment
+pydantic-settings>=2.0.0
+python-dotenv>=0.19.0
+hydra-core>=1.2.0
+
+# Performance and optimization
+numba>=0.56.0
+cython>=0.29.0
+orjson>=3.6.0
+
+# Error handling and resilience
+tenacity>=8.0.0
+circuitbreaker>=1.4.0
+
+# Development tools
+pre-commit>=2.17.0
+isort>=5.10.0
+bandit>=1.7.0
+
+# Optional: GPU acceleration (uncomment if needed)
+# cupy>=10.0.0
+# rapids-cudf>=22.0.0
+
+# Optional: Advanced ML models (uncomment if needed)
+# torch>=1.11.0
+# transformers>=4.17.0
+# sentence-transformers>=2.2.0
+
+# Legacy compatibility (for existing components)
+typing-extensions>=4.0.0
+dataclasses>=0.6; python_version<"3.7"

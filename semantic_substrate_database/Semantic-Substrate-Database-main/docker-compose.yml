@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Semantic Substrate Database - Main service
+  ssdb:
+    build: .
+    image: semantic-substrate-db:1.0.0
+    container_name: ssdb
+    volumes:
+      # Persist database files
+      - ./data:/app/data
+    environment:
+      - SSDB_DATA_DIR=/app/data
+      - PYTHONUNBUFFERED=1
+    command: python src/semantic_substrate_database.py
+    restart: unless-stopped
+
+  # Interactive development container
+  ssdb-dev:
+    build: .
+    image: semantic-substrate-db:1.0.0
+    container_name: ssdb-dev
+    profiles: ["dev"]
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - SSDB_DATA_DIR=/app/data
+      - PYTHONUNBUFFERED=1
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+
+  # Test runner
+  ssdb-test:
+    build: .
+    image: semantic-substrate-db:1.0.0
+    container_name: ssdb-test
+    profiles: ["test"]
+    volumes:
+      - .:/app
+    command: /bin/bash -c "python -m pytest"
+
+volumes:
+  ssdb-data:
+    driver: local
