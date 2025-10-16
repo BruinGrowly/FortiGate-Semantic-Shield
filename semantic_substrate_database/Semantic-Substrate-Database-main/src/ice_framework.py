@@ -472,30 +472,186 @@ class ICEFramework:
         return result
         
     def _create_intent_from_thought(self, thought: str, thought_type: ThoughtType) -> Intent:
-        """Extract intent from human thought"""
-        
-        # Analyze thought for biblical and spiritual components
-        biblical_keywords = ['god', 'jesus', 'lord', 'scripture', 'bible', 'holy', 'divine', 'spiritual']
-        emotional_keywords = ['feel', 'heart', 'soul', 'emotion', 'passion', 'desire']
-        wisdom_keywords = ['understand', 'wisdom', 'knowledge', 'discern', 'learn', 'teach']
-        
-        biblical_score = sum(1 for keyword in biblical_keywords if keyword in thought.lower()) / len(biblical_keywords)
-        emotional_score = sum(1 for keyword in emotional_keywords if keyword in thought.lower()) / len(emotional_keywords)
-        wisdom_score = sum(1 for keyword in wisdom_keywords if keyword in thought.lower()) / len(wisdom_keywords)
-        
-        # Create intent
+        """Extract intent from human thought with extensive security and business vocabulary"""
+
+        # LOVE AXIS - Connection, Care, Relationship, Collaboration
+        love_keywords = [
+            # Biblical/Spiritual
+            'love', 'compassion', 'kindness', 'mercy', 'grace', 'benevolence', 'charity', 'forgiveness',
+            # Business/Relational
+            'care', 'connection', 'empathy', 'support', 'collaboration', 'teamwork', 'partnership', 'trust',
+            'relationship', 'customer service', 'employee wellbeing', 'stakeholder engagement', 'community',
+            'inclusive', 'respectful', 'considerate', 'helpful', 'supportive', 'nurturing', 'protecting',
+            # Security (Positive)
+            'safeguard', 'protect users', 'secure data', 'privacy protection', 'data protection', 'user safety'
+        ]
+
+        # JUSTICE AXIS - Fairness, Truth, Structure, Policy, Compliance
+        justice_keywords = [
+            # Biblical/Moral
+            'justice', 'fairness', 'righteousness', 'integrity', 'truth', 'honest', 'uprightness', 'moral',
+            # Business/Legal
+            'compliance', 'regulation', 'policy', 'standard', 'governance', 'audit', 'accountability',
+            'transparency', 'ethical', 'lawful', 'legitimate', 'authorized', 'approved', 'certified',
+            'verification', 'validation', 'review', 'oversight', 'control', 'procedure', 'protocol',
+            # Security (Policy)
+            'access control', 'authentication', 'authorization', 'security policy', 'compliance check',
+            'audit trail', 'regulatory', 'framework', 'standard operating procedure', 'best practice',
+            'documented', 'approved process', 'official', 'sanctioned'
+        ]
+
+        # POWER AXIS - Capability, Effectiveness, Execution, Performance
+        power_keywords = [
+            # Biblical/Strength
+            'power', 'strength', 'might', 'authority', 'dominion', 'capability', 'potency', 'force',
+            # Business/Performance
+            'effectiveness', 'efficiency', 'performance', 'productivity', 'impact', 'results', 'achievement',
+            'execution', 'implementation', 'delivery', 'throughput', 'capacity', 'scalability', 'robust',
+            'optimization', 'acceleration', 'enhancement', 'improvement', 'upgrade', 'modernization',
+            # Technical/System
+            'processing', 'computation', 'bandwidth', 'latency', 'availability', 'reliability', 'resilience',
+            'infrastructure', 'architecture', 'system', 'network', 'server', 'database', 'application',
+            # Security (Defensive Power)
+            'firewall', 'encryption', 'defense', 'protection mechanism', 'security control', 'barrier',
+            'prevention', 'detection', 'response', 'mitigation', 'remediation', 'recovery', 'backup'
+        ]
+
+        # WISDOM AXIS - Understanding, Analysis, Intelligence, Learning
+        wisdom_keywords = [
+            # Biblical/Insight
+            'wisdom', 'understanding', 'knowledge', 'discernment', 'insight', 'prudence', 'sagacity',
+            # Business/Strategic
+            'analysis', 'strategy', 'planning', 'foresight', 'vision', 'intelligence', 'reasoning',
+            'decision making', 'judgment', 'evaluation', 'assessment', 'consideration', 'deliberation',
+            'research', 'investigation', 'study', 'examination', 'review', 'learning', 'education',
+            # Technical/Data
+            'analytics', 'data science', 'machine learning', 'artificial intelligence', 'algorithm',
+            'pattern recognition', 'anomaly detection', 'predictive', 'diagnostic', 'forensic',
+            # Security (Intelligence)
+            'threat intelligence', 'security analysis', 'risk assessment', 'vulnerability assessment',
+            'penetration testing', 'security research', 'incident analysis', 'forensic analysis',
+            'behavioral analysis', 'signature detection', 'heuristic', 'correlation', 'investigation'
+        ]
+
+        # BIBLICAL/SPIRITUAL INDICATORS
+        biblical_keywords = [
+            'god', 'jesus', 'christ', 'lord', 'jehovah', 'holy spirit', 'scripture', 'bible', 'gospel',
+            'holy', 'divine', 'spiritual', 'sacred', 'blessed', 'prayer', 'worship', 'faith', 'belief',
+            'ministry', 'church', 'christian', 'biblical', 'theological', 'commandment', 'covenant'
+        ]
+
+        # CYBERSECURITY THREATS - High alert indicators
+        threat_keywords = [
+            # Social Engineering
+            'urgent', 'immediately', 'right now', 'act fast', 'limited time', 'expires soon', 'final notice',
+            'click here now', 'verify account', 'confirm identity', 'suspended account', 'unusual activity',
+            'security alert', 'account locked', 'reset password now', 'update payment', 'claim prize',
+            # Executive Impersonation
+            'CEO requests', 'CEO demands', 'executive order', 'confidential request', 'urgent from CFO',
+            'wire transfer', 'immediate payment', 'bypass approval', 'override process', 'exception needed',
+            # Technical Exploitation
+            'disable', 'turn off', 'deactivate', 'bypass', 'ignore warning', 'skip verification',
+            'run as administrator', 'grant permissions', 'allow access', 'disable antivirus', 'disable firewall',
+            'install update', 'download now', 'open attachment', 'enable macros', 'run script',
+            # Ransomware/Malware
+            'encrypted', 'ransom', 'bitcoin', 'payment required', 'files locked', 'decrypt key',
+            'malware', 'trojan', 'backdoor', 'rootkit', 'keylogger', 'spyware', 'exploit', 'payload',
+            # Data Exfiltration
+            'upload', 'download', 'transfer', 'copy', 'export', 'exfiltrate', 'steal', 'extract',
+            'unauthorized access', 'credential dump', 'data breach', 'leak', 'exposure'
+        ]
+
+        # NEGATIVE/MALICIOUS INDICATORS
+        negative_keywords = [
+            # Malicious Intent
+            'abuse', 'exploit', 'manipulate', 'deceive', 'trick', 'scam', 'fraud', 'phishing', 'spoofing',
+            'corrupt', 'compromise', 'breach', 'violate', 'infiltrate', 'penetrate', 'attack', 'hack',
+            # Harmful Actions
+            'destroy', 'delete', 'wipe', 'erase', 'damage', 'sabotage', 'disrupt', 'deny service',
+            'harm', 'injure', 'threaten', 'coerce', 'extort', 'blackmail', 'ransom', 'hostage',
+            # Moral Corruption
+            'evil', 'wicked', 'malicious', 'nefarious', 'sinister', 'devious', 'treacherous', 'deceitful',
+            'dishonest', 'fraudulent', 'criminal', 'illegal', 'unlawful', 'illicit', 'prohibited'
+        ]
+
+        # BUSINESS LEGITIMACY INDICATORS (Positive signals)
+        legitimate_business_keywords = [
+            'scheduled', 'planned', 'approved', 'authorized', 'documented', 'official', 'standard procedure',
+            'regular maintenance', 'routine check', 'scheduled update', 'planned downtime', 'authorized personnel',
+            'proper documentation', 'approval workflow', 'change request', 'ticket number', 'reference ID',
+            'verified', 'authenticated', 'confirmed', 'validated', 'signed off', 'reviewed', 'audited'
+        ]
+
+        # TECHNICAL/SECURITY OPERATIONS (Neutral/Legitimate when contextualized)
+        technical_keywords = [
+            'firewall', 'router', 'switch', 'gateway', 'proxy', 'VPN', 'encryption', 'certificate',
+            'authentication', 'authorization', 'access control', 'privilege', 'permission', 'role',
+            'network', 'protocol', 'port', 'IP address', 'domain', 'DNS', 'SSL', 'TLS', 'HTTPS',
+            'database', 'SQL', 'query', 'transaction', 'backup', 'restore', 'snapshot', 'replication',
+            'monitoring', 'logging', 'alerting', 'SIEM', 'IDS', 'IPS', 'EDR', 'XDR', 'SOC'
+        ]
+
+        # Calculate scores for all axes
+        thought_lower = thought.lower()
+
+        love_score = sum(1 for keyword in love_keywords if keyword in thought_lower) / len(love_keywords)
+        justice_score = sum(1 for keyword in justice_keywords if keyword in thought_lower) / len(justice_keywords)
+        power_score = sum(1 for keyword in power_keywords if keyword in thought_lower) / len(power_keywords)
+        wisdom_score = sum(1 for keyword in wisdom_keywords if keyword in thought_lower) / len(wisdom_keywords)
+
+        biblical_score = sum(1 for keyword in biblical_keywords if keyword in thought_lower) / len(biblical_keywords)
+        threat_score = sum(1 for keyword in threat_keywords if keyword in thought_lower) / len(threat_keywords)
+        negative_score = sum(1 for keyword in negative_keywords if keyword in thought_lower) / len(negative_keywords)
+        legitimate_score = sum(1 for keyword in legitimate_business_keywords if keyword in thought_lower) / len(legitimate_business_keywords)
+        technical_score = sum(1 for keyword in technical_keywords if keyword in thought_lower) / len(technical_keywords)
+
+        # Calculate penalties and bonuses
+        # Negative indicators reduce all axes
+        negativity_penalty = negative_score * 0.6
+        # Threat indicators are strong negative signals
+        threat_penalty = threat_score * 0.8
+        # Legitimate business practices boost Justice axis
+        legitimacy_bonus = legitimate_score * 0.3
+        # Technical operations boost Power and Wisdom axes
+        technical_bonus = technical_score * 0.2
+
+        # Combined penalty (max 0.9 to never completely zero out)
+        total_penalty = min(0.9, negativity_penalty + threat_penalty)
+
+        # Store scores for detailed Intent creation
+        emotional_score = love_score * (1.0 - total_penalty)
+
+        # Create intent with enhanced metadata
         intent = Intent(
             primary_thought=thought,
             thought_type=thought_type,
             emotional_resonance=min(1.0, emotional_score * 2),
-            cognitive_clarity=min(1.0, wisdom_score * 2),
+            cognitive_clarity=min(1.0, (wisdom_score + technical_bonus) * 1.5),
             biblical_foundation=self._extract_biblical_foundation(thought),
             divine_purpose=self._infer_divine_purpose(thought, thought_type),
-            spiritual_significance=min(1.0, biblical_score * 3),
-            intended_meaning=self._extract_intended_meaning(thought),
-            expected_impact=self._infer_expected_impact(thought),
+            spiritual_significance=min(1.0, (biblical_score * 3) * (1.0 - total_penalty)),
+            intended_meaning=self._extract_intended_meaning(thought, legitimacy_bonus, threat_score),
+            expected_impact=self._infer_expected_impact(thought, total_penalty),
             transformation_goal=self._infer_transformation_goal(thought)
         )
+
+        # Store additional semantic metadata on intent for security analysis
+        intent.axis_scores = {
+            'love': love_score,
+            'justice': justice_score + legitimacy_bonus,
+            'power': power_score + technical_bonus,
+            'wisdom': wisdom_score + technical_bonus
+        }
+        intent.security_metadata = {
+            'threat_score': threat_score,
+            'negative_score': negative_score,
+            'legitimate_score': legitimate_score,
+            'technical_score': technical_score,
+            'total_penalty': total_penalty,
+            # Lower thresholds for better sensitivity
+            'is_threat': threat_score > 0.01 or negative_score > 0.015 or total_penalty > 0.4,
+            'is_legitimate': legitimate_score > 0.04 and threat_score < 0.02 and total_penalty < 0.3
+        }
         
         # Calculate semantic components
         intent.calculate_semantic_coordinates()
@@ -549,13 +705,23 @@ class ICEFramework:
         }
         return purpose_map.get(thought_type, "To bring glory to God through meaningful action")
         
-    def _extract_intended_meaning(self, thought: str) -> str:
-        """Extract intended meaning from thought"""
-        return f"Seeking to understand and apply: {thought}"
-        
-    def _infer_expected_impact(self, thought: str) -> str:
+    def _extract_intended_meaning(self, thought: str, legitimacy_bonus: float, threat_score: float) -> str:
+        """Extract intended meaning from thought with security context"""
+        if threat_score > 0.2:
+            return f"Potential security concern detected: {thought[:50]}..."
+        elif legitimacy_bonus > 0.15:
+            return f"Legitimate business operation: {thought}"
+        else:
+            return f"Seeking to understand and apply: {thought}"
+
+    def _infer_expected_impact(self, thought: str, total_penalty: float) -> str:
         """Infer expected impact of thought realization"""
-        return "Spiritual growth and transformed understanding"
+        if total_penalty > 0.5:
+            return "Potential negative impact - requires review and mitigation"
+        elif total_penalty > 0.3:
+            return "Cautious approach needed - moderate risk detected"
+        else:
+            return "Spiritual growth and transformed understanding"
         
     def _infer_transformation_goal(self, thought: str) -> str:
         """Infer transformation goal"""
