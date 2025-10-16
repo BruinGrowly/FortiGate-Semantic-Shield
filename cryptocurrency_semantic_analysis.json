@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "exported_at": "2025-10-17T00:42:37.000205",
+    "engine_version": "2.2 - Ultimate with Sacred Components",
+    "statistics": {
+      "total_concepts": 10,
+      "unique_contexts": 1,
+      "total_semantic_units": 10,
+      "sacred_numbers_count": 0,
+      "total_relationships": 0,
+      "avg_divine_resonance": 0,
+      "avg_distance_from_jehovah": 2.0,
+      "avg_biblical_balance": 1.0,
+      "context_distribution": {
+        "business": 10
+      }
+    }
+  },
+  "concepts": [
+    {
+      "id": 1,
+      "concept_text": "Bitcoin",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 2,
+      "concept_text": "Ethereum",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 3,
+      "concept_text": "Tether USDt",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 4,
+      "concept_text": "USD Coin",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 5,
+      "concept_text": "Binance Coin",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 6,
+      "concept_text": "XRP",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 7,
+      "concept_text": "Cardano",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 8,
+      "concept_text": "Solana",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 9,
+      "concept_text": "Dogecoin",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    },
+    {
+      "id": 10,
+      "concept_text": "Tron",
+      "context": "business",
+      "love": 0.0,
+      "power": 0.0,
+      "wisdom": 0.0,
+      "justice": 0.0,
+      "divine_resonance": 0.0,
+      "distance_from_jehovah": 2.0,
+      "biblical_balance": 1.0,
+      "created_at": "2025-10-16 14:42:36",
+      "updated_at": "2025-10-16 14:42:36"
+    }
+  ],
+  "sacred_numbers": [],
+  "anchors": [
+    {
+      "id": 7,
+      "name": "Divine Perfection",
+      "significance": "Seven Days of Creation - Complete Perfection",
+      "love": 0.98,
+      "power": 0.95,
+      "wisdom": 1.0,
+      "justice": 0.98,
+      "stability": 0.98,
+      "scripture": "Genesis 2:2 - Seventh Day",
+      "eternal_constancy": 0.98
+    },
+    {
+      "id": 12,
+      "name": "God's People",
+      "significance": "The 12 Tribes of Israel - Divine Government",
+      "love": 0.9,
+      "power": 0.95,
+      "wisdom": 0.9,
+      "justice": 0.95,
+      "stability": 0.95,
+      "scripture": "Genesis 49 - The 12 Tribes",
+      "eternal_constancy": 0.95
+    },
+    {
+      "id": 40,
+      "name": "Divine Testing",
+      "significance": "40 Days/Years of Testing and Preparation",
+      "love": 0.85,
+      "power": 0.9,
+      "wisdom": 0.88,
+      "justice": 0.92,
+      "stability": 0.9,
+      "scripture": "Various - 40 Day/Year Periods",
+      "eternal_constancy": 0.9
+    },
+    {
+      "id": 613,
+      "name": "Divine Law",
+      "significance": "The 613 Commandments - Perfect Divine Order",
+      "love": 1.0,
+      "power": 1.0,
+      "wisdom": 1.0,
+      "justice": 1.0,
+      "stability": 1.0,
+      "scripture": "Torah - 613 Mitzvot",
+      "eternal_constancy": 1.0
+    }
+  ]
+}

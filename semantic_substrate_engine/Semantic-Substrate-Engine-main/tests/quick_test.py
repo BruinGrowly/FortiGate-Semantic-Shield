@@ -4,13 +4,34 @@ Quick Test Runner for Semantic Substrate Engine V2
 Verifies that all components are properly installed and functional.
 """
 
-import sys
+import importlib
 import os
+import sys
+from pathlib import Path
 
-# Add parent directory and src to path for imports
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, parent_dir)
-sys.path.insert(0, os.path.join(parent_dir, 'src'))
+ENGINE_SRC = Path(__file__).resolve().parent.parent / "src"
+
+
+def _ensure_module(short_name: str, full_name: str) -> None:
+    """Prefer package imports but keep legacy standalone behaviour."""
+
+    try:
+        module = importlib.import_module(full_name)
+    except ImportError:
+        if str(ENGINE_SRC) not in sys.path:
+            sys.path.insert(0, str(ENGINE_SRC))
+        module = importlib.import_module(short_name)
+    sys.modules.setdefault(short_name, module)
+
+
+for _short, _full in [
+    ("baseline_biblical_substrate", "semantic_substrate_engine.baseline_biblical_substrate"),
+    ("enhanced_core_components", "semantic_substrate_engine.enhanced_core_components"),
+    ("cardinal_semantic_axioms", "semantic_substrate_engine.cardinal_semantic_axioms"),
+    ("advanced_semantic_mathematics", "semantic_substrate_engine.advanced_semantic_mathematics"),
+    ("enterprise_semantic_database", "semantic_substrate_engine.enterprise_semantic_database"),
+]:
+    _ensure_module(_short, _full)
 
 def test_imports():
     """Test that all components can be imported"""

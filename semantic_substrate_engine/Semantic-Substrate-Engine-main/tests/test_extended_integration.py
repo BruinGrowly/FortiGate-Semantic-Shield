@@ -5,19 +5,31 @@ This test verifies that ICE-Centric processing has been successfully
 integrated into additional semantic modules beyond the core engines.
 """
 
-import sys
 import os
+import sys
+from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+ENGINE_SRC = Path(__file__).resolve().parent.parent / "src"
 
 def test_semantic_calculus_integration():
     """Test ICE integration in Semantic Calculus"""
     print("\n=== Test 1: Semantic Calculus ICE Integration ===")
     
     try:
-        from semantic_calculus import SemanticCalculus, ICE_CENTRIC_AVAILABLE, UNIFIED_ICE_AVAILABLE
-        
+        from semantic_substrate_engine.semantic_calculus import (  # type: ignore
+            SemanticCalculus,
+            ICE_CENTRIC_AVAILABLE,
+            UNIFIED_ICE_AVAILABLE,
+        )
+    except ImportError:
+        if str(ENGINE_SRC) not in sys.path:
+            sys.path.insert(0, str(ENGINE_SRC))
+        from semantic_calculus import (  # type: ignore
+            SemanticCalculus,
+            ICE_CENTRIC_AVAILABLE,
+            UNIFIED_ICE_AVAILABLE,
+        )
+    try:
         print(f"ICE-Centric Available: {ICE_CENTRIC_AVAILABLE}")
         print(f"Unified ICE Available: {UNIFIED_ICE_AVAILABLE}")
         
@@ -69,8 +81,18 @@ def test_ultimate_engine_unified_integration():
     print("\n=== Test 2: Ultimate Engine Unified Integration ===")
     
     try:
-        from ultimate_core_engine import UltimateCoreEngine, UNIFIED_ICE_AVAILABLE
-        
+        from semantic_substrate_engine.ultimate_core_engine import (  # type: ignore
+            UltimateCoreEngine,
+            UNIFIED_ICE_AVAILABLE,
+        )
+    except ImportError:
+        if str(ENGINE_SRC) not in sys.path:
+            sys.path.insert(0, str(ENGINE_SRC))
+        from ultimate_core_engine import (  # type: ignore
+            UltimateCoreEngine,
+            UNIFIED_ICE_AVAILABLE,
+        )
+    try:
         print(f"Unified ICE Available: {UNIFIED_ICE_AVAILABLE}")
         
         engine = UltimateCoreEngine()
@@ -116,9 +138,17 @@ def test_cross_module_compatibility():
     print("\n=== Test 3: Cross-Module Compatibility ===")
     
     try:
-        from baseline_biblical_substrate import BiblicalSemanticSubstrate
-        from ultimate_core_engine import UltimateCoreEngine
-        from unified_ice_framework import unified_ice_framework
+        from semantic_substrate_engine.baseline_biblical_substrate import (  # type: ignore
+            BiblicalSemanticSubstrate,
+        )
+        from semantic_substrate_engine.ultimate_core_engine import UltimateCoreEngine  # type: ignore
+        from semantic_substrate_engine.unified_ice_framework import unified_ice_framework  # type: ignore
+    except ImportError:
+        if str(ENGINE_SRC) not in sys.path:
+            sys.path.insert(0, str(ENGINE_SRC))
+        from baseline_biblical_substrate import BiblicalSemanticSubstrate  # type: ignore
+        from ultimate_core_engine import UltimateCoreEngine  # type: ignore
+        from unified_ice_framework import unified_ice_framework  # type: ignore
         
         # Test baseline integration
         baseline = BiblicalSemanticSubstrate()
@@ -172,9 +202,16 @@ def test_performance_across_modules():
     
     try:
         import time
-        from baseline_biblical_substrate import BiblicalSemanticSubstrate
-        from ultimate_core_engine import UltimateCoreEngine  
-        from unified_ice_framework import unified_ice_framework
+        from semantic_substrate_engine.baseline_biblical_substrate import BiblicalSemanticSubstrate  # type: ignore
+        from semantic_substrate_engine.ultimate_core_engine import UltimateCoreEngine  # type: ignore
+        from semantic_substrate_engine.unified_ice_framework import unified_ice_framework  # type: ignore
+    except ImportError:
+        if str(ENGINE_SRC) not in sys.path:
+            sys.path.insert(0, str(ENGINE_SRC))
+        import time  # noqa: F401
+        from baseline_biblical_substrate import BiblicalSemanticSubstrate  # type: ignore
+        from ultimate_core_engine import UltimateCoreEngine  # type: ignore
+        from unified_ice_framework import unified_ice_framework  # type: ignore
         
         test_text = "Balance love, power, wisdom, and justice"
         test_context = "spiritual"

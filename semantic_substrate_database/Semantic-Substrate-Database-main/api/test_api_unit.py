@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import sys
 from pathlib import Path
 from typing import Iterator
 
@@ -31,6 +32,10 @@ def api_client(tmp_path_factory: pytest.TempPathFactory) -> Iterator[TestClient]
     os.environ["SEMANTIC_DB_PATH"] = str(db_path)
 
     # Reload the module so the lifespan hook picks up the temp path.
+    api_root = Path(__file__).resolve().parent.parent
+    if str(api_root) not in sys.path:
+        sys.path.insert(0, str(api_root))
+
     module = importlib.import_module("api.semantic_api")
     module = importlib.reload(module)
 
@@ -58,7 +63,7 @@ def stored_concept(api_client: TestClient) -> int:
 
 def test_root_endpoint(api_client: TestClient) -> None:
     response = api_client.get("/")
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
     body = response.json()
     assert body["name"] == "Semantic Substrate Database API"
     assert "version" in body
@@ -151,6 +156,37 @@ def test_anchor_search(api_client: TestClient) -> None:
 
 def test_sacred_number_endpoints(api_client: TestClient) -> None:
     create = api_client.post("/sacred-numbers", json={"value": 7})
+    assert create.status_code == 201, create.text
+    created = create.json()
+    assert created["value"] == 7
+    listing = api_client.get("/sacred-numbers")
+    assert listing.status_code == 200
+    numbers = listing.json()
+    assert any(item["id"] == created["id"] for item in numbers)
+
+
+def test_compass_telemetry_endpoints(api_client: TestClient) -> None:
+    payload = {
+        "context": "production_test",
+        "love": 0.44,
+        "justice": 0.27,
+        "power": 0.17,
+        "wisdom": 0.12,
+        "golden_batch_size": 21,
+        "harmonic_load_factor": 0.93,
+        "metadata": {"preset": "theological"},
+    }
+    create = api_client.post("/telemetry/compass", json=payload)
+    assert create.status_code == 201, create.text
+    created = create.json()
+    assert created["context"] == payload["context"]
+    assert created["golden_batch_size"] == payload["golden_batch_size"]
+    assert created["harmonic_load_factor"] == pytest.approx(payload["harmonic_load_factor"])
+    listing = api_client.get("/telemetry/compass")
+    assert listing.status_code == 200
+    entries = listing.json()
+    assert any(entry["id"] == created["id"] for entry in entries)
+    create = api_client.post("/sacred-numbers", json={"value": 7})
     assert create.status_code == 201
 
     listing = api_client.get("/sacred-numbers")
@@ -170,7 +206,8 @@ def test_statistics(api_client: TestClient) -> None:
 
 def test_export(api_client: TestClient) -> None:
     response = api_client.post("/export")
-    assert response.status_code == 200
+    if response.status_code != 200:
+        pytest.fail(f"export failed: {response.text}")
     body = response.json()
     for key in ("metadata", "concepts", "sacred_numbers"):
         assert key in body

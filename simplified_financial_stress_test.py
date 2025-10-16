@@ -18,16 +18,36 @@ import concurrent.futures
 import uuid
 
 # Import core semantic components
-import sys
-sys.path.append('semantic_substrate_engine/Semantic-Substrate-Engine-main/src')
+try:
+    from semantic_substrate_engine.cardinal_semantic_axioms import (  # type: ignore
+        SemanticVector,
+        CardinalAxiom,
+        BusinessSemanticMapping,
+        JEHOVAH_ANCHOR,
+        validate_semantic_integrity,
+    )
+    from semantic_substrate_engine.advanced_semantic_mathematics import (  # type: ignore
+        create_semantic_vector,
+        compute_semantic_alignment,
+    )
+except ImportError:  # pragma: no cover - standalone fallback
+    import sys
 
-from cardinal_semantic_axioms import (
-    SemanticVector, CardinalAxiom, BusinessSemanticMapping,
-    JEHOVAH_ANCHOR, validate_semantic_integrity
-)
-from advanced_semantic_mathematics import (
-    create_semantic_vector, compute_semantic_alignment
-)
+    ENGINE_SRC = "semantic_substrate_engine/Semantic-Substrate-Engine-main/src"
+    if ENGINE_SRC not in sys.path:
+        sys.path.append(ENGINE_SRC)
+
+    from cardinal_semantic_axioms import (  # type: ignore
+        SemanticVector,
+        CardinalAxiom,
+        BusinessSemanticMapping,
+        JEHOVAH_ANCHOR,
+        validate_semantic_integrity,
+    )
+    from advanced_semantic_mathematics import (  # type: ignore
+        create_semantic_vector,
+        compute_semantic_alignment,
+    )
 
 
 class FinancialThreatType(Enum):

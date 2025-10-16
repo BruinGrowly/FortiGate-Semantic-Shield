@@ -11,6 +11,7 @@ Demonstrates the database's ability to:
 import sys
 import os
 import json
+import pytest
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from semantic_substrate_database import SemanticSubstrateDatabase
@@ -149,7 +150,6 @@ def test_self_aware_database():
     print("  ✓ Zero manual relationship creation")
     print("\nThe database truly understands its own data!")
 
-    return True
 
 
 def test_cryptocurrency_self_awareness():
@@ -164,7 +164,7 @@ def test_cryptocurrency_self_awareness():
 
     if not os.path.exists(db_path):
         print("ERROR: Cryptocurrency database not found. Run test_cryptocurrency_data.py first.")
-        return False
+        pytest.skip("Cryptocurrency database not found. Run test_cryptocurrency_data.py first.")
 
     db = SemanticSubstrateDatabase(db_path)
 
@@ -240,7 +240,6 @@ def test_cryptocurrency_self_awareness():
     print("✓ Zero manual configuration required")
     print("✓ Self-organizing semantic network created")
 
-    return True
 
 
 if __name__ == "__main__":

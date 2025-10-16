@@ -447,14 +447,23 @@ class SacredNumber:
         
         return SacredNumber(new_value, self.sacred_context)
     
-    def get_sacred_coordinates(self) -> BiblicalCoordinates:
+    def get_sacred_coordinates(self):
         """Convert sacred number to biblical coordinates"""
-        return BiblicalCoordinates(
-            love=self.divine_attributes['love'],
-            power=self.divine_attributes['power'],
-            wisdom=self.divine_attributes['wisdom'],
-            justice=self.divine_attributes['justice']
-        )
+        if BiblicalCoordinates is not None:
+            return BiblicalCoordinates(
+                love=self.divine_attributes['love'],
+                power=self.divine_attributes['power'],
+                wisdom=self.divine_attributes['wisdom'],
+                justice=self.divine_attributes['justice']
+            )
+        else:
+            # Return tuple if BiblicalCoordinates is not available
+            return (
+                self.divine_attributes['love'],
+                self.divine_attributes['power'],
+                self.divine_attributes['wisdom'],
+                self.divine_attributes['justice']
+            )
 
 class BridgeFunction:
     """
@@ -639,10 +648,17 @@ class UniversalAnchor:
     
     def __init__(self):
         # Set coordinates for all anchors
-        self.ANCHORS[613]['coordinates'] = BiblicalCoordinates(1.0, 0.9, 0.95, 1.0)
-        self.ANCHORS[12]['coordinates'] = BiblicalCoordinates(0.9, 0.8, 0.85, 0.9)
-        self.ANCHORS[7]['coordinates'] = BiblicalCoordinates(0.9, 0.7, 0.9, 1.0)
-        self.ANCHORS[40]['coordinates'] = BiblicalCoordinates(0.6, 0.8, 0.7, 0.9)
+        if BiblicalCoordinates is not None:
+            self.ANCHORS[613]['coordinates'] = BiblicalCoordinates(1.0, 0.9, 0.95, 1.0)
+            self.ANCHORS[12]['coordinates'] = BiblicalCoordinates(0.9, 0.8, 0.85, 0.9)
+            self.ANCHORS[7]['coordinates'] = BiblicalCoordinates(0.9, 0.7, 0.9, 1.0)
+            self.ANCHORS[40]['coordinates'] = BiblicalCoordinates(0.6, 0.8, 0.7, 0.9)
+        else:
+            # Use tuples if BiblicalCoordinates is not available
+            self.ANCHORS[613]['coordinates'] = (1.0, 0.9, 0.95, 1.0)
+            self.ANCHORS[12]['coordinates'] = (0.9, 0.8, 0.85, 0.9)
+            self.ANCHORS[7]['coordinates'] = (0.9, 0.7, 0.9, 1.0)
+            self.ANCHORS[40]['coordinates'] = (0.6, 0.8, 0.7, 0.9)
         
         self.anchor_points = {}
         self.navigation_matrix = self._create_navigation_matrix()
@@ -837,19 +853,36 @@ class ContextualResonance:
         
         return alignment
     
-    def _calculate_semantic_compatibility(self, coords: BiblicalCoordinates, 
+    def _calculate_semantic_compatibility(self, coords,
                                            semantic_unit: SemanticUnit) -> float:
         """Calculate compatibility with semantic unit"""
-        semantic_coords = BiblicalCoordinates(
-            semantic_unit.essence['love'],
-            semantic_unit.essence['power'],
-            semantic_unit.essence['wisdom'],
-            semantic_unit.essence['justice']
-        )
-        
-        # Calculate compatibility
-        compatibility = 1.0 - abs(coords.distance_from_coordinates(semantic_coords)) / math.sqrt(4)
-        
+        if BiblicalCoordinates is not None:
+            semantic_coords = BiblicalCoordinates(
+                semantic_unit.essence['love'],
+                semantic_unit.essence['power'],
+                semantic_unit.essence['wisdom'],
+                semantic_unit.essence['justice']
+            )
+
+            # Calculate compatibility
+            compatibility = 1.0 - abs(coords.distance_from_coordinates(semantic_coords)) / math.sqrt(4)
+        else:
+            # Use numpy arrays if BiblicalCoordinates not available
+            if hasattr(coords, '__iter__'):
+                coord_arr = np.array(list(coords))
+            else:
+                coord_arr = np.array([coords.love, coords.power, coords.wisdom, coords.justice])
+
+            semantic_arr = np.array([
+                semantic_unit.essence['love'],
+                semantic_unit.essence['power'],
+                semantic_unit.essence['wisdom'],
+                semantic_unit.essence['justice']
+            ])
+
+            distance = np.linalg.norm(coord_arr - semantic_arr)
+            compatibility = 1.0 - (distance / math.sqrt(4))
+
         return compatibility
     
     def _initialize_resonance_patterns(self) -> Dict[str, Any]:

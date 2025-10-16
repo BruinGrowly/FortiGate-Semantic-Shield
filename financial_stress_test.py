@@ -26,22 +26,58 @@ import uuid
 import hashlib
 
 # Import the enhanced system
-import sys
-sys.path.append('semantic_substrate_engine/Semantic-Substrate-Engine-main/src')
+try:
+    from semantic_substrate_engine.cardinal_semantic_axioms import (  # type: ignore
+        SemanticVector,
+        CardinalAxiom,
+        BusinessSemanticMapping,
+        JEHOVAH_ANCHOR,
+        validate_semantic_integrity,
+    )
+    from semantic_substrate_engine.advanced_semantic_mathematics import (  # type: ignore
+        create_semantic_vector,
+        compute_semantic_alignment,
+        advanced_math,
+    )
+    from semantic_substrate_engine.enhanced_ice_framework import (  # type: ignore
+        EnhancedICEFramework,
+        BusinessIntent,
+        ExecutionStrategy,
+    )
+    from semantic_substrate_engine.enterprise_semantic_database import (  # type: ignore
+        AsyncSemanticDatabase,
+        LearningMode,
+        SemanticSignature,
+    )
+except ImportError:  # pragma: no cover - preserve upstream standalone behaviour
+    import sys
 
-from cardinal_semantic_axioms import (
-    SemanticVector, CardinalAxiom, BusinessSemanticMapping,
-    JEHOVAH_ANCHOR, validate_semantic_integrity
-)
-from advanced_semantic_mathematics import (
-    create_semantic_vector, compute_semantic_alignment, advanced_math
-)
-from enhanced_ice_framework import (
-    EnhancedICEFramework, BusinessIntent, ExecutionStrategy
-)
-from enterprise_semantic_database import (
-    AsyncSemanticDatabase, LearningMode, SemanticSignature
-)
+    ENGINE_SRC = "semantic_substrate_engine/Semantic-Substrate-Engine-main/src"
+    if ENGINE_SRC not in sys.path:
+        sys.path.append(ENGINE_SRC)
+
+    from cardinal_semantic_axioms import (  # type: ignore
+        SemanticVector,
+        CardinalAxiom,
+        BusinessSemanticMapping,
+        JEHOVAH_ANCHOR,
+        validate_semantic_integrity,
+    )
+    from advanced_semantic_mathematics import (  # type: ignore
+        create_semantic_vector,
+        compute_semantic_alignment,
+        advanced_math,
+    )
+    from enhanced_ice_framework import (  # type: ignore
+        EnhancedICEFramework,
+        BusinessIntent,
+        ExecutionStrategy,
+    )
+    from enterprise_semantic_database import (  # type: ignore
+        AsyncSemanticDatabase,
+        LearningMode,
+        SemanticSignature,
+    )
 
 
 class FinancialComplianceFramework(Enum):

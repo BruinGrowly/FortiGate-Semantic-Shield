@@ -24,37 +24,50 @@ import pickle
 import hashlib
 import math
 import importlib.util
+import uuid
 from typing import Dict, List, Tuple, Optional, Any, Union
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 import os
+
+try:
+    from .enhanced_core_components import (
+        SacredNumber as _CanonicalSacredNumber,
+        SemanticUnit as _CanonicalSemanticUnit,
+    )
+except Exception:  # pragma: no cover - graceful fallback when components unavailable
+    _CanonicalSacredNumber = None
+    _CanonicalSemanticUnit = None
 
 # Global fallback SacredNumber class (defined before imports)
 class _SacredNumberFallback:
     """Fallback SacredNumber class with all required methods"""
     def __init__(self, value):
-        self.value = value
-        self.is_sacred = True if value in [1, 3, 7, 12, 21, 40, 42, 66, 77, 613] else False
+        numeric_value = float(value)
+        self.value = numeric_value
+        self._int_value = int(round(numeric_value))
+        sacred_values = {1, 3, 7, 12, 21, 40, 42, 66, 77, 613}
+        self.is_sacred = self._int_value in sacred_values
         self.sacred_resonance = 0.9 if self.is_sacred else 0.1
         self.biblical_significance = self._get_biblical_meaning()
         self.divine_attributes = {
-            'value': self.value,
-            'is_sacred': self.is_sacred,
-            'biblical_meaning': self._get_biblical_meaning()
+            'love': 0.8 if self.is_sacred else 0.5,
+            'power': 0.7 if self.is_sacred else 0.4,
+            'wisdom': 0.9 if self.is_sacred else 0.6,
+            'justice': 0.8 if self.is_sacred else 0.5,
         }
         self.mystical_properties = {
-            'value': self.value,
-            'is_sacred': self.is_sacred,
+            'value': self._int_value,
             'prime_factorization': self._get_prime_factors(),
             'biblical_significance': self._get_biblical_meaning(),
-            'numerological_value': self._get_numerological_value()
+            'numerological_value': self._get_numerological_value(),
         }
-    
+
     def _get_biblical_meaning(self):
         meanings = {
             1: "Unity, Oneness with God",
-            3: "Divine perfection, Holy Trinity", 
+            3: "Divine perfection, Holy Trinity",
             7: "Spiritual perfection, Completion",
             12: "Divine government, Apostolic foundation",
             21: "Disorder, Rebellion",
@@ -62,78 +75,71 @@ class _SacredNumberFallback:
             42: "Israel's oppression, Coming of Messiah",
             66: "Idolatry, Imperfection",
             77: "Perfect order, Resurrection",
-            613: "Divine law completeness, Torah commandments"
+            613: "Divine law completeness, Torah commandments",
         }
-        return meanings.get(self.value, "Unknown")
-    
+        return meanings.get(self._int_value, "Unknown")
+
     def _get_prime_factors(self):
-        if self.value <= 1:
+        n = abs(self._int_value)
+        if n <= 1:
             return []
         factors = []
-        n = self.value
-        for i in range(2, int(n ** 0.5) + 1):
-            while n % i == 0:
-                factors.append(i)
-                n //= i
+        divisor = 2
+        while divisor * divisor <= n:
+            while n % divisor == 0:
+                factors.append(divisor)
+                n //= divisor
+            divisor += 1
         if n > 1:
             factors.append(n)
         return factors
-    
+
     def _get_numerological_value(self):
-        return sum(int(d) for d in str(abs(self.value)))
+        return sum(int(d) for d in str(abs(self._int_value)))
 
 
 class SacredNumberWrapper:
     """Wrapper to ensure SacredNumber has all required methods"""
     def __init__(self, value, engine_instance=None):
         self.value = value
+        fallback = _SacredNumberFallback(value)
+
+        canonical_instance = None
+        if engine_instance is None and _CanonicalSacredNumber is not None:
+            try:
+                canonical_instance = _CanonicalSacredNumber(value)
+            except Exception:
+                canonical_instance = None
+
+        if engine_instance is None:
+            engine_instance = canonical_instance
         
         if engine_instance is None:
-            # Use our fallback implementation
-            self._is_sacred = True if value in [1, 3, 7, 12, 21, 40, 42, 66, 77, 613] else False
-            self._sacred_resonance = 0.9 if self._is_sacred else 0.1
-            self._biblical_significance = self._get_biblical_meaning()
-            self._divine_attributes = {
-                'value': self.value,
-                'is_sacred': self._is_sacred,
-                'biblical_meaning': self._get_biblical_meaning()
-            }
-            self._mystical_properties = {
-                'value': self.value,
-                'is_sacred': self._is_sacred,
-                'prime_factorization': self._get_prime_factors(),
-                'biblical_significance': self._get_biblical_meaning(),
-                'numerological_value': self._get_numerological_value()
-            }
+            self._engine = None
+            self._is_sacred = fallback.is_sacred
+            self._sacred_resonance = fallback.sacred_resonance
+            self._biblical_significance = fallback.biblical_significance
+            self._divine_attributes = fallback.divine_attributes
+            self._mystical_properties = fallback.mystical_properties
             self._engine_version = None
         else:
             # Use engine version but store engine instance for delegation
             self._engine = engine_instance
-            self._is_sacred = getattr(engine_instance, 'is_sacred', False)
-            self._sacred_resonance = getattr(engine_instance, 'sacred_resonance', 0.5)
-            self._biblical_significance = getattr(engine_instance, 'biblical_significance', 'Unknown')
+            self._is_sacred = getattr(engine_instance, 'is_sacred', fallback.is_sacred)
+            self._sacred_resonance = getattr(
+                engine_instance, 'sacred_resonance', fallback.sacred_resonance
+            )
+            self._biblical_significance = getattr(
+                engine_instance, 'biblical_significance', fallback.biblical_significance
+            )
             self._engine_version = getattr(engine_instance, 'engine_version', 'Unknown')
-            
-            # Calculate fallback properties if not present
-            if not hasattr(engine_instance, 'divine_attributes'):
-                self._divine_attributes = {
-                    'value': self.value,
-                    'is_sacred': self._is_sacred,
-                    'biblical_meaning': self._get_biblical_meaning()
-                }
-            else:
-                self._divine_attributes = getattr(engine_instance, 'divine_attributes', {})
-            
-            if not hasattr(engine_instance, 'mystical_properties'):
-                self._mystical_properties = {
-                    'value': self.value,
-                    'is_sacred': self._is_sacred,
-                    'prime_factorization': self._get_prime_factors(),
-                    'biblical_significance': self._get_biblical_meaning(),
-                    'numerological_value': self._get_numerological_value()
-                }
-            else:
-                self._mystical_properties = getattr(engine_instance, 'mystical_properties', {})
+
+            self._divine_attributes = getattr(
+                engine_instance, 'divine_attributes', fallback.divine_attributes
+            )
+            self._mystical_properties = getattr(
+                engine_instance, 'mystical_properties', fallback.mystical_properties
+            )
     
     def _get_biblical_meaning(self):
         if hasattr(self, '_biblical_significance') and self._biblical_significance != 'Unknown':
@@ -464,6 +470,21 @@ class SemanticSubstrateDatabase:
                 divine_attributes_json TEXT,
                 mystical_properties_json TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS compass_telemetry (
+                id TEXT PRIMARY KEY,
+                timestamp TEXT NOT NULL,
+                context TEXT NOT NULL,
+                love REAL NOT NULL,
+                justice REAL NOT NULL,
+                power REAL NOT NULL,
+                wisdom REAL NOT NULL,
+                golden_batch_size INTEGER,
+                harmonic_load_factor REAL,
+                metadata TEXT
             )
         """)
 
@@ -1429,6 +1450,125 @@ class SemanticSubstrateDatabase:
         # Use proximity query
         return self.query_by_proximity(anchor_coords, max_distance, limit=limit)
 
+    def record_compass_telemetry(
+        self,
+        context: str,
+        love: float,
+        justice: float,
+        power: float,
+        wisdom: float,
+        *,
+        golden_batch_size: Optional[int] = None,
+        harmonic_load_factor: Optional[float] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Persist compass telemetry for meaning-aware observability."""
+
+        entry_id = str(uuid.uuid4())
+        metadata_json = json.dumps(metadata or {})
+
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO compass_telemetry (
+                id,
+                timestamp,
+                context,
+                love,
+                justice,
+                power,
+                wisdom,
+                golden_batch_size,
+                harmonic_load_factor,
+                metadata
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                entry_id,
+                datetime.now(timezone.utc).isoformat(),
+                context,
+                love,
+                justice,
+                power,
+                wisdom,
+                golden_batch_size,
+                harmonic_load_factor,
+                metadata_json,
+            ),
+        )
+        self.conn.commit()
+        cursor.execute(
+            """
+            SELECT id, timestamp, context, love, justice, power, wisdom,
+                   golden_batch_size, harmonic_load_factor, metadata
+            FROM compass_telemetry
+            WHERE id = ?
+            """,
+            (entry_id,),
+        )
+        row = cursor.fetchone()
+        metadata = {}
+        if row['metadata']:
+            try:
+                metadata = json.loads(row['metadata'])
+            except json.JSONDecodeError:
+                metadata = {'raw': row['metadata']}
+        return {
+            'id': row['id'],
+            'timestamp': row['timestamp'],
+            'context': row['context'],
+            'love': row['love'],
+            'justice': row['justice'],
+            'power': row['power'],
+            'wisdom': row['wisdom'],
+            'golden_batch_size': row['golden_batch_size'],
+            'harmonic_load_factor': row['harmonic_load_factor'],
+            'metadata': metadata,
+        }
+
+    def list_compass_telemetry(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Return most recent compass telemetry entries."""
+
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, timestamp, context, love, justice, power, wisdom,
+                   golden_batch_size, harmonic_load_factor, metadata
+            FROM compass_telemetry
+            ORDER BY timestamp DESC
+            LIMIT ?
+            """,
+            (max(1, limit),),
+        )
+        rows = cursor.fetchall()
+        entries: List[Dict[str, Any]] = []
+        for row in rows:
+            raw_metadata = row["metadata"]
+            metadata: Dict[str, Any]
+            if raw_metadata:
+                try:
+                    metadata = json.loads(raw_metadata)
+                except json.JSONDecodeError:
+                    metadata = {"raw": raw_metadata}
+            else:
+                metadata = {}
+            entries.append(
+                {
+                    "id": row["id"],
+                    "timestamp": row["timestamp"],
+                    "context": row["context"],
+                    "love": row["love"],
+                    "justice": row["justice"],
+                    "power": row["power"],
+                    "wisdom": row["wisdom"],
+                    "golden_batch_size": row["golden_batch_size"],
+                    "harmonic_load_factor": row["harmonic_load_factor"],
+                    "metadata": metadata,
+                }
+            )
+        return entries
+
     def search_semantic(self, query_text: str,
                        context: str = "biblical",
                        limit: int = 10) -> List[Dict]:
@@ -1553,7 +1693,7 @@ class SemanticSubstrateDatabase:
             Path to created backup file
         """
         import shutil
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         if backup_path is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1656,7 +1796,7 @@ class SemanticSubstrateDatabase:
             Path to incremental backup file
         """
         import os
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         os.makedirs(backup_dir, exist_ok=True)
 
@@ -1743,7 +1883,7 @@ class SemanticSubstrateDatabase:
             Path to snapshot file
         """
         import os
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         os.makedirs(snapshot_dir, exist_ok=True)
 
@@ -1765,7 +1905,7 @@ class SemanticSubstrateDatabase:
         """
         import os
         import glob
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         backups = []
 
@@ -1803,7 +1943,7 @@ class SemanticSubstrateDatabase:
         os.makedirs(backup_dir, exist_ok=True)
 
         # Create backup in backup directory
-        from datetime import datetime
+        from datetime import datetime, timezone
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = os.path.join(backup_dir, f"{os.path.basename(self.db_path)}.backup_{timestamp}")
 
@@ -1829,7 +1969,11 @@ class SemanticSubstrateDatabase:
         export_data = {
             'metadata': {
                 'exported_at': datetime.now().isoformat(),
-                'engine_version': self.engine.engine_version,
+                'engine_version': getattr(
+                    getattr(self, "engine", None),
+                    "engine_version",
+                    getattr(self, "engine_version", "unknown"),
+                ),
                 'statistics': self.get_statistics()
             },
             'concepts': [],
@@ -1977,3 +2121,6 @@ def demonstrate_semantic_database():
 
 if __name__ == "__main__":
     demonstrate_semantic_database()
+
+
+

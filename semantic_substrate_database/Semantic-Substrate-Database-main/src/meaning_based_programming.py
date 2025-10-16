@@ -5,10 +5,146 @@ Leveraging Semantic Scaffolding to Replace Python Coding
 Instead of writing Python code, we specify meaning and let the scaffolding generate behavior.
 """
 
+import copy
 import json
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass
+import logging
 import math
+from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+LOGGER = logging.getLogger(__name__)
+
+SRC_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = SRC_ROOT.parent.parent.parent
+DEFAULT_PRIMER_FILENAME = "Semantic_Substrate_Primer_1.4.json"
+PRIMER_FILENAME_PATTERN = "Semantic_Substrate_Primer_*.json"
+
+
+def _primer_version_tuple(path: Path) -> Tuple[int, ...]:
+    """Extract comparable version tuple from primer filename."""
+    stem = path.stem.split("_")[-1]
+    parts: List[int] = []
+    for segment in stem.split("."):
+        try:
+            parts.append(int(segment))
+        except ValueError:
+            parts.append(0)
+    return tuple(parts) if parts else (0,)
+
+
+@lru_cache(maxsize=4)
+def _load_primer_dict(path_str: str) -> Dict[str, Any]:
+    """Load primer JSON payload from disk (cached)."""
+    with open(path_str, "r", encoding="utf-8") as primer_file:
+        return json.load(primer_file)
+
+
+def _resolve_primer_path(custom_path: Optional[str] = None) -> Path:
+    """Resolve the semantic substrate primer path."""
+    if custom_path:
+        candidate = Path(custom_path).expanduser()
+        if candidate.exists():
+            return candidate
+        raise FileNotFoundError(f"Semantic Substrate primer not found at {candidate}")
+
+    preferred = REPO_ROOT / DEFAULT_PRIMER_FILENAME
+    if preferred.exists():
+        return preferred
+
+    candidates = sorted(
+        (p for p in REPO_ROOT.glob(PRIMER_FILENAME_PATTERN) if p.is_file()),
+        key=_primer_version_tuple,
+        reverse=True,
+    )
+    if not candidates:
+        raise FileNotFoundError(
+            "Semantic Substrate primer file not found in repository root."
+        )
+    return candidates[0]
+
+
+def _load_primer_payload(custom_path: Optional[str] = None) -> Tuple[Dict[str, Any], Path]:
+    """Load primer JSON data and return with its resolved path."""
+    resolved = _resolve_primer_path(custom_path)
+    data = copy.deepcopy(_load_primer_dict(str(resolved)))
+    return data, resolved
+
+
+PRINCIPLE_DEFAULTS: Dict[str, Dict[str, Any]] = {
+    "principle_1": {
+        "key": "universal_anchor",
+        "name": "Universal Anchor Point Principle",
+        "description": "Systems are stabilized and navigated by invariant reference points.",
+        "effect": "provides_stability",
+        "coordinates": (0.9, 0.9, 0.9, 0.9),
+        "substrate_role": "Provides stability through Anchor Point A (1,1,1,1).",
+    },
+    "principle_2": {
+        "key": "coherent_interconnectedness",
+        "name": "Principle of Coherent Interconnectedness and Emergence",
+        "description": "Complex systems arise from precise interlinking of components.",
+        "effect": "creates_harmony",
+        "coordinates": (0.8, 0.7, 0.9, 0.8),
+        "substrate_role": "Encourages harmony through coordinated axes.",
+    },
+    "principle_3": {
+        "key": "dynamic_balance",
+        "name": "Principle of Dynamic Balance and Polarity",
+        "description": "Stability emerges from adaptive interplay of complementary forces.",
+        "effect": "optimizes_balance",
+        "coordinates": (0.85, 0.8, 0.85, 0.85),
+        "substrate_role": "Maintains dynamic equilibrium between polarities.",
+    },
+    "principle_4": {
+        "key": "sovereignty_interdependence",
+        "name": "Principle of Sovereignty and Relational Interdependence",
+        "description": "Entities retain essence while strengthening relationships.",
+        "effect": "strengthens_identity",
+        "coordinates": (0.9, 0.85, 0.8, 0.85),
+        "substrate_role": "Aligns sovereign loci with collective harmony.",
+    },
+    "principle_5": {
+        "key": "information_meaning_coupling",
+        "name": "Principle of Information-Meaning Coupling and Value Generation",
+        "description": "Value emerges when information is contextualized with intent.",
+        "effect": "creates_understanding",
+        "coordinates": (0.7, 0.8, 0.9, 0.8),
+        "substrate_role": "Couples raw data with the ICE framework to create value.",
+    },
+    "principle_6": {
+        "key": "iterative_growth",
+        "name": "Principle of Iterative Growth and Adaptive Transformation",
+        "description": "Systems evolve through feedback-driven learning cycles.",
+        "effect": "enables_development",
+        "coordinates": (0.8, 0.8, 0.85, 0.8),
+        "substrate_role": "Uses dissonance as feedback for refinement.",
+    },
+    "principle_7": {
+        "key": "contextual_resonance",
+        "name": "Principle of Contextual Resonance and Optimal Flow",
+        "description": "Optimal function aligns internal state with external context.",
+        "effect": "achieves_purpose",
+        "coordinates": (0.9, 0.85, 0.9, 0.85),
+        "substrate_role": "Ensures navigation adapts to surrounding conditions.",
+    },
+}
+
+
+FALLBACK_UNIVERSAL_PRINCIPLES: Dict[str, Dict[str, Any]] = {
+    defaults["key"]: {
+        "name": defaults["name"],
+        "description": defaults["description"],
+        "statement": defaults["description"],
+        "effect": defaults["effect"],
+        "coordinates": defaults["coordinates"],
+        "substrate_role": defaults["substrate_role"],
+        "source_id": principle_id,
+        "primer_version": None,
+    }
+    for principle_id, defaults in PRINCIPLE_DEFAULTS.items()
+}
 
 @dataclass
 class MeaningSpecification:
@@ -48,10 +184,27 @@ class MeaningBasedExecutor:
     The scaffolding generates behavior from meaning.
     """
     
-    def __init__(self):
+    def __init__(self, primer_path: Optional[str] = None):
+        try:
+            primer_data, primer_source = _load_primer_payload(primer_path)
+        except FileNotFoundError:
+            LOGGER.warning(
+                "Semantic Substrate primer not found; using fallback universal principles."
+            )
+            primer_data = {}
+            primer_source = None
+
+        self.primer_metadata = {
+            'source_path': str(primer_source) if primer_source else None,
+            'schema': primer_data.get('_schema'),
+            'version': primer_data.get('_version'),
+            'meta': primer_data.get('_meta', {}),
+        }
+        self.primer_data = primer_data
+
         # Load the semantic scaffolds from your existing system
         self.biblical_coordinates = self._load_coordinate_scaffold()
-        self.universal_principles = self._load_principle_scaffold()
+        self.universal_principles = self._load_principle_scaffold(primer_data)
         self.sacred_numbers = self._load_number_scaffold()
         self.context_modifiers = self._load_context_scaffold()
         
@@ -78,45 +231,37 @@ class MeaningBasedExecutor:
             'david': (0.85, 0.7, 0.8, 0.75)
         }
         
-    def _load_principle_scaffold(self) -> Dict[str, Dict]:
-        """Load the Seven Universal Principles scaffold"""
-        return {
-            'universal_anchor': {
-                'description': 'Stability through reference points',
-                'effect': 'provides_stability',
-                'coordinates': (0.9, 0.9, 0.9, 0.9)
-            },
-            'coherent_interconnectedness': {
-                'description': 'Complex systems from linked components',
-                'effect': 'creates_harmony',
-                'coordinates': (0.8, 0.7, 0.9, 0.8)
-            },
-            'dynamic_balance': {
-                'description': 'Golden ratio equilibrium',
-                'effect': 'optimizes_balance',
-                'coordinates': (0.85, 0.8, 0.85, 0.85)
-            },
-            'sovereignty_interdependence': {
-                'description': 'Maintaining essence while enhancing relationships',
-                'effect': 'strengthens_identity',
-                'coordinates': (0.9, 0.85, 0.8, 0.85)
-            },
-            'information_meaning_coupling': {
-                'description': 'Value from contextual integration',
-                'effect': 'creates_understanding',
-                'coordinates': (0.7, 0.8, 0.9, 0.8)
-            },
-            'iterative_growth': {
-                'description': 'Evolution through learning cycles',
-                'effect': 'enables_development',
-                'coordinates': (0.8, 0.8, 0.85, 0.8)
-            },
-            'contextual_resonance': {
-                'description': 'Optimal functionality through alignment',
-                'effect': 'achieves_purpose',
-                'coordinates': (0.9, 0.85, 0.9, 0.85)
-            }
-        }
+    def _load_principle_scaffold(
+        self,
+        primer_data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Dict[str, Any]]:
+        """Load the Seven Universal Principles scaffold."""
+        scaffold = copy.deepcopy(FALLBACK_UNIVERSAL_PRINCIPLES)
+        if not primer_data:
+            return scaffold
+
+        principles_section = primer_data.get("universal_principles")
+        if not isinstance(principles_section, dict):
+            return scaffold
+
+        primer_version = primer_data.get("_version")
+        for principle_id, details in principles_section.items():
+            defaults = PRINCIPLE_DEFAULTS.get(principle_id)
+            if not defaults:
+                continue
+            key = defaults["key"]
+            entry = scaffold.setdefault(key, {})
+            entry["name"] = details.get("name", entry.get("name", defaults["name"]))
+            statement = details.get("statement")
+            if statement:
+                entry["description"] = statement
+                entry["statement"] = statement
+            substrate_role = details.get("substrate_role")
+            if substrate_role:
+                entry["substrate_role"] = substrate_role
+            entry["source_id"] = principle_id
+            entry["primer_version"] = primer_version
+        return scaffold
         
     def _load_number_scaffold(self) -> Dict[int, Dict]:
         """Load sacred numbers scaffold"""

@@ -46,11 +46,9 @@ def test_database_initialization():
         # Cleanup
         db.conn.close()
         os.unlink(db_path)
-        return True
         
     except Exception as e:
-        print(f"Initialization failed: {e}")
-        return False
+        raise AssertionError(f"Initialization failed: {e}") from e
 
 def test_ice_database_integration():
     """Test ICE-Centric database operations"""
@@ -122,11 +120,9 @@ def test_ice_database_integration():
         # Cleanup
         db.conn.close()
         os.unlink(db_path)
-        return True
         
     except Exception as e:
-        print(f"ICE integration failed: {e}")
-        return False
+        raise AssertionError(f"ICE integration failed: {e}") from e
 
 def test_database_performance():
     """Test database performance with ICE processing"""
@@ -196,11 +192,9 @@ def test_database_performance():
         # Cleanup
         db.conn.close()
         os.unlink(db_path)
-        return True
         
     except Exception as e:
-        print(f"Performance test failed: {e}")
-        return False
+        raise AssertionError(f"Performance test failed: {e}") from e
 
 def test_api_functionality():
     """Test API functionality if available"""
@@ -211,18 +205,15 @@ def test_api_functionality():
         api_path = Path(__file__).parent.parent / "api" / "semantic_api.py"
         if not api_path.exists():
             print("API module not found, skipping API tests")
-            return True
-        
+            
         # Basic import test
         sys.path.insert(0, str(api_path.parent))
         import semantic_api
         print("API module imported successfully")
         
-        return True
         
     except Exception as e:
-        print(f"API test failed: {e}")
-        return False
+        raise AssertionError(f"API test failed: {e}") from e
 
 def main():
     """Run all integration tests"""
@@ -248,7 +239,6 @@ def main():
     
     if passed == total:
         print("All tests passed! Database is ready for deployment.")
-        return True
     else:
         print("Some tests failed. Please review the errors above.")
         return False

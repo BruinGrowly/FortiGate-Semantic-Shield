@@ -40,15 +40,11 @@ def test_imports():
         print(f"   Basic analysis works: {test_coords}")
         print(f"   Wisdom: {test_coords.wisdom:.3f} (should be high)")
         print(f"   Balance: {test_coords.biblical_balance():.3f}")
-        
-        return True
-        
+
     except ImportError as e:
-        print(f"Import error: {e}")
-        return False
+        raise AssertionError(f"Import error: {e}") from e
     except Exception as e:
-        print(f"Error: {e}")
-        return False
+        raise AssertionError(f"Error: {e}") from e
 
 def test_core_functionality():
     """Test core functionality"""
@@ -84,23 +80,18 @@ def test_core_functionality():
         print(f" Context flexibility: Biblical={biblical_resonance:.3f}, Secular={secular_resonance:.3f}")
         
         # Verify biblical context has higher resonance
-        if biblical_resonance > secular_resonance:
-            print(" Context adaptation working correctly")
-        else:
-            print(" Context adaptation needs attention")
-        
-        return True
-        
+        assert biblical_resonance > secular_resonance, "Context adaptation needs attention"
+        print(" Context adaptation working correctly")
+
     except Exception as e:
-        print(f" Core functionality test failed: {e}")
-        return False
+        raise AssertionError(f" Core functionality test failed: {e}") from e
 
 def test_mathematical_precision():
     """Test mathematical precision"""
     print("\n Testing Mathematical Precision...")
     
     try:
-        from ..src.baseline_biblical_substrate import BiblicalCoordinates
+        from baseline_biblical_substrate import BiblicalCoordinates
         
         # Test perfect coordinates
         perfect_coords = BiblicalCoordinates(1.0, 1.0, 1.0, 1.0)
@@ -117,19 +108,14 @@ def test_mathematical_precision():
         
         # Test distance calculation accuracy
         max_distance = origin_coords.distance_from_jehovah()
-        expected = (2.0)  # sqrt(4)
+        expected = 2.0  # sqrt(4)
         print(f" Distance calculation: {max_distance:.6f} (expected: {expected:.6f})")
-        
         if abs(max_distance - expected) < 0.001:
             print(" Mathematical precision verified")
-            return True
         else:
-            print("⚠ Mathematical precision needs attention")
-            return False
-        
+            raise AssertionError("Mathematical precision needs attention")
     except Exception as e:
-        print(f" Mathematical precision test failed: {e}")
-        return False
+        raise AssertionError(f" Mathematical precision test failed: {e}") from e
 
 def test_database_integration():
     """Test biblical database integration"""
@@ -163,12 +149,9 @@ def test_database_integration():
         print(f" Biblical references: {ref_count}")
         print(f" Wisdom principles: {principle_count}")
         print(f" Coordinate mappings: {mapping_count}")
-        
-        return True
-        
+
     except Exception as e:
-        print(f" Database integration test failed: {e}")
-        return False
+        raise AssertionError(f" Database integration test failed: {e}") from e
 
 def test_performance():
     """Test performance characteristics"""
@@ -200,17 +183,17 @@ def test_performance():
         if second_time < first_time:
             print(" Caching optimization working")
         else:
-            print(" Caching optimization may need attention")
+            raise AssertionError("Caching optimization may need attention")
         
         # Test cache size
         cache_size = len(engine.coordinate_cache)
         print(f" Cache entries: {cache_size}")
         
-        return True
+
         
     except Exception as e:
-        print(f" Performance test failed: {e}")
-        return False
+        raise AssertionError(f" Performance test failed: {e}") from e
+
 
 def run_quick_tests():
     """Run all quick tests and return overall status"""
@@ -231,12 +214,13 @@ def run_quick_tests():
     for test_name, test_func in tests:
         try:
             print(f"\n{test_name}...")
-            result = test_func()
-            results.append((test_name, result, None))
-            print(f" {test_name}: {'PASS' if result else 'FAIL'}")
+            test_func()
+            results.append((test_name, True, None))
+            print(f" {test_name}: PASS")
         except Exception as e:
             results.append((test_name, False, str(e)))
             print(f" {test_name}: FAIL - {e}")
+
     
     # Summary
     print("\n" + "=" * 70)
@@ -263,7 +247,7 @@ def run_quick_tests():
         print(f" Core Features: Fully Operational")
         print(f" Ready for Enhancement and Development")
         
-        return True
+
     else:
         print(f"\n {total - passed} tests failed")
         print(f" {passed} tests passed")
@@ -283,3 +267,4 @@ def run_quick_tests():
 if __name__ == "__main__":
     success = run_quick_tests()
     exit(0 if success else 1)
+

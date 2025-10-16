@@ -5,20 +5,32 @@ This test verifies that the ICE-Centric integration works correctly
 in the BiblicalSemanticSubstrate class.
 """
 
-import sys
 import os
+import sys
+from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+try:
+    from semantic_substrate_engine.baseline_biblical_substrate import (  # type: ignore
+        BiblicalSemanticSubstrate,
+        BiblicalCoordinates,
+        biblical_to_semantic,
+        semantic_to_biblical,
+        map_context_to_domain,
+        infer_thought_type,
+    )
+except ImportError:
+    ENGINE_SRC = Path(__file__).resolve().parent.parent / "src"
+    if str(ENGINE_SRC) not in sys.path:
+        sys.path.insert(0, str(ENGINE_SRC))
 
-from baseline_biblical_substrate import (
-    BiblicalSemanticSubstrate,
-    BiblicalCoordinates,
-    biblical_to_semantic,
-    semantic_to_biblical,
-    map_context_to_domain,
-    infer_thought_type
-)
+    from baseline_biblical_substrate import (  # type: ignore
+        BiblicalSemanticSubstrate,
+        BiblicalCoordinates,
+        biblical_to_semantic,
+        semantic_to_biblical,
+        map_context_to_domain,
+        infer_thought_type,
+    )
 
 def test_ice_availability():
     """Test that ICE availability check works"""

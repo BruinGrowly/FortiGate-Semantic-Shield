@@ -4,8 +4,17 @@ COMPREHENSIVE INTEGRATION TEST
 Test all revolutionary frameworks working together
 """
 
-import sys
 import os
+import sys
+from pathlib import Path
+
+try:
+    from semantic_substrate_engine.ultimate_core_engine import UltimateCoreEngine  # type: ignore
+except ImportError:
+    ENGINE_SRC = Path(__file__).resolve().parent.parent / "src"
+    if str(ENGINE_SRC) not in sys.path:
+        sys.path.insert(0, str(ENGINE_SRC))
+    from ultimate_core_engine import UltimateCoreEngine  # type: ignore
 
 print("=" * 80)
 print("COMPREHENSIVE INTEGRATION TEST")
@@ -15,7 +24,6 @@ print("=" * 80)
 # Test 1: Core Engine
 print("\n1. TESTING CORE ENGINE")
 try:
-    from ultimate_core_engine import UltimateCoreEngine
     engine = UltimateCoreEngine()
     print("[OK] Ultimate Core Engine initialized successfully")
     print(f"   Engine version: {engine.engine_version}")

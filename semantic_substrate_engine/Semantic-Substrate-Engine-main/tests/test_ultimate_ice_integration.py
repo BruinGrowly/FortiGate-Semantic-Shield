@@ -5,14 +5,26 @@ This test verifies that the ICE-Centric integration works correctly
 in the UltimateCoreEngine class.
 """
 
-import sys
 import os
+import sys
+from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+try:
+    from semantic_substrate_engine.ultimate_core_engine import UltimateCoreEngine  # type: ignore
+    from semantic_substrate_engine.baseline_biblical_substrate import (  # type: ignore
+        map_context_to_domain,
+        infer_thought_type,
+    )
+except ImportError:
+    ENGINE_SRC = Path(__file__).resolve().parent.parent / "src"
+    if str(ENGINE_SRC) not in sys.path:
+        sys.path.insert(0, str(ENGINE_SRC))
 
-from ultimate_core_engine import UltimateCoreEngine
-from baseline_biblical_substrate import map_context_to_domain, infer_thought_type
+    from ultimate_core_engine import UltimateCoreEngine  # type: ignore
+    from baseline_biblical_substrate import (  # type: ignore
+        map_context_to_domain,
+        infer_thought_type,
+    )
 
 def test_ultimate_engine_initialization():
     """Test that Ultimate Engine initializes correctly with ICE-Centric support"""

@@ -1,16 +1,24 @@
-# 🏦 FortiGate Semantic Shield v7.0 - Deployment Script
-# ========================================================
+"""FortiGate Semantic Shield v7.0 deployment helper."""
 
-Automated deployment script for FortiGate environments
-Supports both physical and virtual deployments
+from __future__ import annotations
 
-import sys
-import os
-import requests
-import yaml
 import argparse
 import json
+import os
+import sys
 from datetime import datetime
+
+import requests
+import yaml
+
+from fortigate_semantic_shield.ss_intuition import (
+    CompassProfile,
+    golden_batch_size,
+    golden_ratio_profile,
+)
+
+
+CARDINAL_AXES = ("LOVE", "JUSTICE", "POWER", "WISDOM")
 
 def load_config(config_file):
     """Load configuration from file"""
@@ -18,8 +26,44 @@ def load_config(config_file):
         with open(config_file, 'r') as f:
             return yaml.safe_load(f)
     except Exception as e:
-        print(f"❌ Error loading config: {e}")
+        print(f"[FAIL] Error loading config: {e}")
         sys.exit(1)
+
+
+def compute_compass_profile(config: dict) -> CompassProfile:
+    """Derive the SS Intuition compass profile from configuration."""
+
+    profile = golden_ratio_profile()
+    ss_config = (config or {}).get("ss_intuition", {})
+    biases = ss_config.get("biases", {})
+    if not biases:
+        return profile
+
+    vector = list(profile.as_tuple())
+    axis_index = {axis: idx for idx, axis in enumerate(CARDINAL_AXES)}
+    adjusted = False
+    for axis, idx in axis_index.items():
+        key_variants = {axis, axis.lower(), axis.upper()}
+        value = None
+        for key in key_variants:
+            if key in biases:
+                value = biases[key]
+                break
+        if value is None:
+            continue
+        try:
+            bias = float(value)
+        except (TypeError, ValueError):
+            continue
+        vector[idx] = max(0.01, bias)
+        adjusted = True
+
+    if not adjusted:
+        return profile
+
+    total = sum(vector)
+    normalized = [value / total for value in vector]
+    return CompassProfile(*normalized)
 
 def validate_fortigate_connection(fortigate_config):
     """Validate FortiGate connection"""
@@ -33,23 +77,23 @@ def validate_fortigate_connection(fortigate_config):
         
         if response.status_code == 200:
             status = response.json()
-            print(f"✅ FortiGate connection successful")
-            print(f"🏦 FortiGate Status: {status.get('status', 'unknown')}")
-            print(f"📍 FortiGate Version: {status.get('version', 'unknown')}")
+            print(f"[PASS] FortiGate connection successful")
+            print(f"[OFFICE] FortiGate Status: {status.get('status', 'unknown')}")
+            print(f"[PIN] FortiGate Version: {status.get('version', 'unknown')}")
             return True, status
         else:
-            print(f"❌ Connection failed: HTTP {response.status_code}")
+            print(f"[FAIL] Connection failed: HTTP {response.status_code}")
             return False, None
             
     except requests.exceptions.RequestException as e:
-        print(f"❌ Connection error: {e}")
+        print(f"[FAIL] Connection error: {e}")
         return False, None
 
 def install_dependencies():
     """Install required dependencies"""
     try:
         import subprocess
-        print("📦 Installing dependencies...")
+        print("[PACKAGE] Installing dependencies...")
         
         # Core dependencies
         core_deps = [
@@ -61,11 +105,11 @@ def install_dependencies():
             subprocess.run([sys.executable, '-m', 'pip', 'install', dep], 
                           check=True, capture_output=True)
         
-        print("✅ Dependencies installed successfully")
+        print("[PASS] Dependencies installed successfully")
         return True
         
     except Exception as e:
-        print(f"❌ Dependency installation failed: {e}")
+        print(f"[FAIL] Dependency installation failed: {e}")
         return False
 
 def setup_database():
@@ -108,11 +152,11 @@ def setup_database():
         conn.commit()
         conn.close()
         
-        print(f"✅ Database created: {db_path}")
+        print(f"[PASS] Database created: {db_path}")
         return True
         
     except Exception as e:
-        print(f"❌ Database setup failed: {e}")
+        print(f"[FAIL] Database setup failed: {e}")
         return False
 
 def deploy_to_fortigate(fortigate_config, config):
@@ -123,6 +167,13 @@ def deploy_to_fortigate(fortigate_config, config):
         if not success:
             return False
         
+        compass_profile = compute_compass_profile(config or {})
+        base_batch = config.get('deployment', {}).get('base_batch', 200)
+        recommended_batch = golden_batch_size(
+            base=max(1, base_batch),
+            boost=compass_profile.power + compass_profile.wisdom
+        )
+
         # Create deployment record
         deployment_id = f"deploy_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
@@ -133,7 +184,12 @@ def deploy_to_fortigate(fortigate_config, config):
             'configuration': config,
             'fortigate_status': status,
             'semantic_shield_version': '7.0.0',
-            'deployment_mode': config.get('deployment', {}).get('mode', 'standard')
+            'deployment_mode': config.get('deployment', {}).get('mode', 'standard'),
+            'ss_intuition': {
+                'compass_profile': compass_profile.as_dict(),
+                'recommended_batch_size': recommended_batch,
+                'golden_ratio': GOLDEN_RATIO,
+            },
         }
         
         # Save deployment record
@@ -143,27 +199,29 @@ def deploy_to_fortigate(fortigate_config, config):
         with open(f"{deployments_dir}/{deployment_id}.json", 'w') as f:
             json.dump(deployment_record, f, indent=2)
         
-        print(f"✅ Deployment created: {deployment_id}")
+        print(f"[PASS] Deployment created: {deployment_id}")
         
         # Test deployment
-        print("🧪 Testing deployment...")
+        print("[LAB] Testing deployment...")
         
         # Test with sample event
-        test_result = test_processing(fortigate_config)
+        test_result = test_processing(fortigate_config, compass_profile)
         
         if test_result['success']:
-            print(f"✅ Deployment test passed")
-            print(f"📊 Test Results:")
+            print(f"[PASS] Deployment test passed")
+            print(f"[STATS] Test Results:")
             print(f"   Processed: {test_result['processed']} events")
             print(f"   Throughput: {test_result['throughput']} events/sec")
             print(f"   Avg Alignment: {test_result['avg_alignment']:.3f}")
+            print(f"   Golden Batch Size: {test_result['golden_batch_size']}")
+            print(f"   Compass Profile: {compass_profile.as_dict()}")
             return True
         else:
-            print(f"❌ Deployment test failed")
+            print(f"[FAIL] Deployment test failed")
             return False
             
     except Exception as e:
-        print(f"❌ Deployment failed: {e}")
+        print(f"[FAIL] Deployment failed: {e}")
         return False
 
 def test_processing(fortigate_config):
@@ -172,7 +230,7 @@ def test_processing(fortigate_config):
         import time
         import numpy as np
         
-        print("🧪 Testing semantic processing...")
+        print("[LAB] Testing semantic processing...")
         
         # Test with sample data
         test_events = []
@@ -188,6 +246,10 @@ def test_processing(fortigate_config):
         start_time = time.time()
         
         # Process events
+        batch_size = golden_batch_size(
+            base=20,
+            boost=compass_profile.power + compass_profile.wisdom
+        )
         processed_events = []
         for event in test_events:
             # Create semantic vector
@@ -220,11 +282,12 @@ def test_processing(fortigate_config):
             'processed': len(processed_events),
             'throughput': throughput,
             'avg_alignment': avg_alignment,
-            'processing_time': processing_time
+            'processing_time': processing_time,
+            'golden_batch_size': batch_size,
         }
         
     except Exception as e:
-        print(f"❌ Processing test failed: {e}")
+        print(f"[FAIL] Processing test failed: {e}")
         return {'success': False, 'error': str(e)}
 
 def generate_deployment_report(fortigate_config, config, deployment_id):
@@ -246,11 +309,11 @@ def generate_deployment_report(fortigate_config, config, deployment_id):
         with open(f"{reports_dir}/deployment_report_{deployment_id}.json", 'w') as f:
             json.dump(report, f, indent=2)
         
-        print(f"✅ Report generated: reports/deployment_report_{deployment_id}.json")
+        print(f"[PASS] Report generated: reports/deployment_report_{deployment_id}.json")
         return report
         
     except Exception as e:
-        print(f"❌ Report generation failed: {e}")
+        print(f"[FAIL] Report generation failed: {e}")
         return None
 
 def generate_recommendations(config):
@@ -334,7 +397,7 @@ def main():
     parser.add_argument('--validate-deployment', action='store_true', help='Validate deployment after installation')
     args = parser.parse_args()
     
-    print("🏦 FortiGate Semantic Shield v7.0 - Deployment Script")
+    print("[OFFICE] FortiGate Semantic Shield v7.0 - Deployment Script")
     print("=" * 50)
     
     # Step 1: Install dependencies
@@ -363,46 +426,46 @@ def main():
     else:
         fortigate_config = config.get('fortigate', {})
         if not fortigate_config.get('host'):
-            print("❌ FortiGate configuration required. Use --device and --token or set in config file")
+            print("[FAIL] FortiGate configuration required. Use --device and --token or set in config file")
             sys.exit(1)
     
     # Step 5: Validate connection
-    print("🔍 Validating FortiGate connection...")
+    print("[CHECK] Validating FortiGate connection...")
     success, status = validate_fortigate_connection(fortigate_config)
     if not success:
-        print("❌ FortiGate connection failed. Please check configuration.")
+        print("[FAIL] FortiGate connection failed. Please check configuration.")
         sys.exit(1)
     
     # Step 6: Add deployment mode
     config['deployment'] = {'mode': args.mode}
     
     # Step 7: Deploy to FortiGate
-    print("🚀 Deploying to FortiGate...")
+    print("[DEPLOY] Deploying to FortiGate...")
     deployment_success = deploy_to_fortigate(fortigate_config, config)
     
     if deployment_success:
         deployment_id = f"deploy_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
-        print("📊 Generating deployment report...")
+        print("[STATS] Generating deployment report...")
         report = generate_deployment_report(fortigate_config, config, deployment_id)
         
-        print("📋 Deployment completed successfully!")
-        print(f"📈 Deployment ID: {deployment_id}")
-        print(f"🌐 Monitoring Dashboard: {report.get('monitoring_dashboard', 'N/A')}")
+        print("[REPORT] Deployment completed successfully!")
+        print(f"[METRICS] Deployment ID: {deployment_id}")
+        print(f"[WEB] Monitoring Dashboard: {report.get('monitoring_dashboard', 'N/A')}")
         
-        print("\n📝 Recommendations:")
+        print("\n[NOTES] Recommendations:")
         for i, rec in enumerate(report['recommendations'], 1):
             print(f"  {i}. {rec}")
         
-        print("\n🎯 Next Steps:")
+        print("\n[TARGET] Next Steps:")
         for i, step in enumerate(report['next_steps'], 1):
             print(f"  {i}. {step}")
         
-        print(f"\n🎉 FortiGate Semantic Shield v7.0 deployed successfully!")
+        print(f"\n[SUCCESS] FortiGate Semantic Shield v7.0 deployed successfully!")
         return True
         
     else:
-        print("❌ Deployment failed. Please check logs and retry.")
+        print("[FAIL] Deployment failed. Please check logs and retry.")
         return False
 
 def create_default_config(args):
@@ -461,8 +524,8 @@ def create_default_config(args):
     with open('config.yaml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
     
-    print(f"✅ Default configuration created: config.yaml")
-    print(f"📝 Please edit config.yaml with your FortiGate details and rerun")
+    print(f"[PASS] Default configuration created: config.yaml")
+    print(f"[NOTES] Please edit config.yaml with your FortiGate details and rerun")
     return config
 
 if __name__ == "__main__":

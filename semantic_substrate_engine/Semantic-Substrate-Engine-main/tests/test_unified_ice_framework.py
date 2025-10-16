@@ -6,21 +6,34 @@ combining ICE-Centric processing with biblical extensions while maintaining
 backward compatibility with both legacy frameworks.
 """
 
-import sys
 import os
+import sys
+from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+try:
+    from semantic_substrate_engine.unified_ice_framework import (  # type: ignore
+        UnifiedICEFramework,
+        ProcessingMode,
+        BiblicalExtensions,
+        unified_ice_framework,
+        legacy_ice_wrapper,
+        ICE_CENTRIC_AVAILABLE,
+        LEGACY_ICE_AVAILABLE,
+    )
+except ImportError:
+    ENGINE_SRC = Path(__file__).resolve().parent.parent / "src"
+    if str(ENGINE_SRC) not in sys.path:
+        sys.path.insert(0, str(ENGINE_SRC))
 
-from unified_ice_framework import (
-    UnifiedICEFramework,
-    ProcessingMode,
-    BiblicalExtensions,
-    unified_ice_framework,
-    legacy_ice_wrapper,
-    ICE_CENTRIC_AVAILABLE,
-    LEGACY_ICE_AVAILABLE
-)
+    from unified_ice_framework import (  # type: ignore
+        UnifiedICEFramework,
+        ProcessingMode,
+        BiblicalExtensions,
+        unified_ice_framework,
+        legacy_ice_wrapper,
+        ICE_CENTRIC_AVAILABLE,
+        LEGACY_ICE_AVAILABLE,
+    )
 
 def test_unified_initialization():
     """Test that Unified ICE Framework initializes correctly"""

@@ -14,16 +14,25 @@ Test Categories:
 8. Statistics and Reporting
 """
 
-import unittest
 import os
 import sys
 import tempfile
+import unittest
+from pathlib import Path
 
-# Ensure src modules are importable
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+try:
+    from semantic_substrate_database.meaning_based_database import MeaningBasedDatabase  # type: ignore
+    from semantic_substrate_database.ice_framework import (  # type: ignore
+        ThoughtType,
+        ContextDomain,
+    )
+except ImportError:
+    SRC_PATH = Path(__file__).resolve().parent.parent / "src"
+    if str(SRC_PATH) not in sys.path:
+        sys.path.append(str(SRC_PATH))
 
-from meaning_based_database import MeaningBasedDatabase
-from ice_framework import ThoughtType, ContextDomain
+    from meaning_based_database import MeaningBasedDatabase  # type: ignore
+    from ice_framework import ThoughtType, ContextDomain  # type: ignore
 
 
 class TestMeaningBasedDatabase(unittest.TestCase):

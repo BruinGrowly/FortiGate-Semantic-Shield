@@ -13,6 +13,7 @@ import sys
 import os
 import csv
 import time
+import pytest
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from semantic_substrate_database import SemanticSubstrateDatabase
@@ -47,8 +48,7 @@ def test_cryptocurrency_semantic_database():
     print("-" * 80)
 
     if not os.path.exists(csv_path):
-        print(f"ERROR: File not found: {csv_path}")
-        return False
+        pytest.skip(f"Cryptocurrency dataset missing: {csv_path}")
 
     cryptos = load_cryptocurrency_data(csv_path)
     print(f"Loaded {len(cryptos)} cryptocurrency records")
@@ -252,7 +252,6 @@ def test_cryptocurrency_semantic_database():
     print(f"Export File: {export_path}")
     print(f"Backup File: {backup_path}")
 
-    return True
 
 
 if __name__ == "__main__":

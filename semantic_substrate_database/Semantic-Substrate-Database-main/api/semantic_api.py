@@ -195,6 +195,26 @@ class SacredNumberResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CompassTelemetryRequest(BaseModel):
+    """Incoming compass telemetry payload"""
+
+    context: str = Field(..., description="Execution context for the telemetry entry")
+    love: float = Field(..., ge=0.0, le=1.0)
+    justice: float = Field(..., ge=0.0, le=1.0)
+    power: float = Field(..., ge=0.0, le=1.0)
+    wisdom: float = Field(..., ge=0.0, le=1.0)
+    golden_batch_size: Optional[int] = Field(None, ge=0)
+    harmonic_load_factor: Optional[float] = Field(None, ge=0.0)
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class CompassTelemetryResponse(CompassTelemetryRequest):
+    """Compass telemetry entry echoed back from storage"""
+
+    id: str
+    timestamp: datetime
+
+
 class StatisticsResponse(BaseModel):
     """Schema for database statistics"""
     total_concepts: int
@@ -215,6 +235,7 @@ class HealthResponse(BaseModel):
     timestamp: str
     database_connected: bool
     engine_version: str
+    error: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -324,20 +345,25 @@ async def root():
 @app.get("/health", response_model=HealthResponse)
 async def health_check(database: SemanticSubstrateDatabase = Depends(get_db)):
     """Health check endpoint"""
+    connected = True
+    engine_version = getattr(database, "engine_version", "unknown")
+    error_message: Optional[str] = None
+
     try:
-        # Test database connection
-        stats = database.get_statistics()
-        connected = True
-        engine_version = database.engine.engine_version
-    except Exception as e:
+        database.get_statistics()
+        engine = getattr(database, "engine", None)
+        if engine and hasattr(engine, "engine_version"):
+            engine_version = engine.engine_version
+    except Exception as exc:
         connected = False
-        engine_version = "unknown"
+        error_message = str(exc)
 
     return HealthResponse(
         status="healthy" if connected else "unhealthy",
         timestamp=datetime.now().isoformat(),
         database_connected=connected,
-        engine_version=engine_version
+        engine_version=engine_version,
+        error=error_message,
     )
 
 
@@ -706,6 +732,48 @@ async def list_sacred_numbers(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list sacred numbers: {str(e)}"
+        )
+
+@app.post("/telemetry/compass", response_model=CompassTelemetryResponse, status_code=status.HTTP_201_CREATED)
+async def record_compass_telemetry(
+    payload: CompassTelemetryRequest,
+    database: SemanticSubstrateDatabase = Depends(get_db),
+    token: str = Depends(verify_token),
+):
+    """Record a compass telemetry entry for observability dashboards."""
+    try:
+        entry = database.record_compass_telemetry(
+            context=payload.context,
+            love=payload.love,
+            justice=payload.justice,
+            power=payload.power,
+            wisdom=payload.wisdom,
+            golden_batch_size=payload.golden_batch_size,
+            harmonic_load_factor=payload.harmonic_load_factor,
+            metadata=payload.metadata,
+        )
+        return CompassTelemetryResponse(**entry)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to record compass telemetry: {str(e)}"
+        )
+
+
+@app.get("/telemetry/compass", response_model=List[CompassTelemetryResponse])
+async def list_compass_telemetry(
+    limit: int = Query(10, ge=1, le=100),
+    database: SemanticSubstrateDatabase = Depends(get_db),
+    token: str = Depends(verify_token),
+):
+    """Retrieve recent compass telemetry entries."""
+    try:
+        entries = database.list_compass_telemetry(limit=limit)
+        return [CompassTelemetryResponse(**entry) for entry in entries]
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list compass telemetry: {str(e)}"
         )
 
 

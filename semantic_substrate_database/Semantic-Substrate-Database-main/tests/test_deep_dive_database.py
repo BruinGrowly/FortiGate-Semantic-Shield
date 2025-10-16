@@ -14,16 +14,28 @@ Test Categories:
 8. Statistics and Reporting
 """
 
-import unittest
 import os
 import sys
 import tempfile
+import unittest
+from pathlib import Path
 
-# Ensure src modules are importable
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+try:
+    from semantic_substrate_database.deep_dive_database import DeepDiveDatabase  # type: ignore
+    from semantic_substrate_database.deep_dive_meaning_scaffold import (  # type: ignore
+        ScaffoldLayer,
+        MeaningUnit,
+    )
+except ImportError:
+    SRC_PATH = Path(__file__).resolve().parent.parent / "src"
+    if str(SRC_PATH) not in sys.path:
+        sys.path.append(str(SRC_PATH))
 
-from deep_dive_database import DeepDiveDatabase
-from deep_dive_meaning_scaffold import ScaffoldLayer, MeaningUnit
+    from deep_dive_database import DeepDiveDatabase  # type: ignore
+    from deep_dive_meaning_scaffold import (  # type: ignore
+        ScaffoldLayer,
+        MeaningUnit,
+    )
 
 
 class TestDeepDiveDatabase(unittest.TestCase):

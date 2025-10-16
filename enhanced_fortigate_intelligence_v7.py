@@ -10,45 +10,63 @@ License: Enterprise License
 """
 
 import asyncio
-import logging
-import time
-import json
 import hashlib
-from typing import Dict, List, Tuple, Optional, Any, Union
+import json
+import logging
+import sqlite3
+import sys
+import threading
+import time
+from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-import threading
-from collections import defaultdict, deque
-import numpy as np
-import aiohttp
-import sqlite3
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import aiohttp
+import numpy as np
+
+PACKAGE_ROOT = Path(__file__).resolve().parent
+SUBSTRATE_SRC = PACKAGE_ROOT / "semantic_substrate_engine" / "Semantic-Substrate-Engine-main" / "src"
+DATABASE_SRC = PACKAGE_ROOT / "semantic_substrate_database" / "Semantic-Substrate-Database-main" / "src"
+
+for candidate in (SUBSTRATE_SRC, DATABASE_SRC):
+    candidate_str = str(candidate)
+    if candidate.exists() and candidate_str not in sys.path:
+        sys.path.append(candidate_str)
 
 # Import enhanced semantic components
-from semantic_substrate_engine.Semantic-Substrate-Engine-main.src.enhanced_ice_framework import (
-    EnhancedICEFramework, BusinessIntent, ExecutionStrategy, ICEProcessingResult,
-    enhanced_ice, initialize_enhanced_ice
+from enhanced_ice_framework import (
+    BusinessIntent,
+    EnhancedICEFramework,
+    ExecutionStrategy,
+    ICEProcessingResult,
+    enhanced_ice,
+    initialize_enhanced_ice,
 )
-from semantic_substrate_engine.Semantic-Substrate-Engine-main.src.enterprise_semantic_database import (
-    AsyncSemanticDatabase, SemanticSignature, LearningPattern, BusinessContext,
-    LearningMode, semantic_db, initialize_semantic_database
+from enterprise_semantic_database import (
+    AsyncSemanticDatabase,
+    BusinessContext,
+    LearningMode,
+    LearningPattern,
+    SemanticSignature,
+    initialize_semantic_database,
+    semantic_db,
 )
-from semantic_substrate_engine.Semantic-Substrate-Engine-main.src.cardinal_semantic_axioms import (
-    SemanticVector, CardinalAxiom, BusinessSemanticMapping,
-    JEHOVAH_ANCHOR, create_divine_anchor_vector
+from cardinal_semantic_axioms import (
+    BusinessSemanticMapping,
+    CardinalAxiom,
+    JEHOVAH_ANCHOR,
+    SemanticVector,
+    create_divine_anchor_vector,
 )
-from semantic_substrate_engine.Semantic-Substrate-Engine-main.src.advanced_semantic_mathematics import (
-    Vector4D, advanced_math, create_business_vector, compute_semantic_alignment
-)
-    enhanced_ice, initialize_enhanced_ice
-)
-from semantic_substrate_engine.Semantic-Substrate-Engine-main.src.enterprise_semantic_database import (
-    AsyncSemanticDatabase, SemanticSignature, LearningPattern, BusinessContext,
-    LearningMode, semantic_db, initialize_semantic_database
-)
-from semantic_substrate_engine.Semantic-Substrate-Engine-main.src.advanced_semantic_mathematics import (
-    Vector4D, advanced_math, create_business_vector, compute_business_maturity
+from advanced_semantic_mathematics import (
+    Vector4D,
+    advanced_math,
+    compute_business_maturity,
+    compute_semantic_alignment,
+    create_business_vector,
 )
 
 # Import existing FortiGate components

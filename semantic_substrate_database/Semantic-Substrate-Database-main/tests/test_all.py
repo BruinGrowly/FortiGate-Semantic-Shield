@@ -13,20 +13,25 @@ subject to change, so the tests below focus on structural guarantees:
 import os
 import sys
 import unittest
+from pathlib import Path
 
+try:
+    from semantic_substrate_engine.baseline_biblical_substrate import (  # type: ignore
+        BiblicalCoordinates,
+        BiblicalText,
+        BiblicalSemanticSubstrate,
+    )
+except ImportError:
+    SYS_ROOT = Path(__file__).resolve().parent
+    SRC_PATH = SYS_ROOT.parent / "src"
+    if str(SRC_PATH) not in sys.path:
+        sys.path.append(str(SRC_PATH))
 
-# Ensure we can import the local package
-SYS_ROOT = os.path.dirname(__file__)
-SRC_PATH = os.path.join(SYS_ROOT, "..", "src")
-if SRC_PATH not in sys.path:
-    sys.path.append(SRC_PATH)
-
-
-from baseline_biblical_substrate import (  # noqa: E402
-    BiblicalCoordinates,
-    BiblicalText,
-    BiblicalSemanticSubstrate,
-)
+    from baseline_biblical_substrate import (  # type: ignore
+        BiblicalCoordinates,
+        BiblicalText,
+        BiblicalSemanticSubstrate,
+    )
 
 
 class TestBiblicalCoordinates(unittest.TestCase):
