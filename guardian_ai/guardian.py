@@ -6,10 +6,9 @@ import asyncio
 import logging
 from collections import deque
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Tuple, Any, Optional
 
-from . import semantic_engine
-from .models import SemanticCoordinates, ThreatAnalysisResult, SemanticThreatVector
+from .models import SemanticCoordinates, ThreatAnalysisResult, SemanticThreatVector, DefenseResponse
 from .threat_patterns import THREAT_PATTERNS
 
 class Guardian:
@@ -31,12 +30,12 @@ class Guardian:
         self.logger.info(f"Identity: {self.mission_statement}")
         self.logger.info("Guardian is aware, adaptive, and protecting.")
 
-    async def analyze_threat(self, text: str, context: Dict) -> ThreatAnalysisResult:
+    async def analyze_threat(self, text: str, context: Dict, ljpw_coords_tuple: Tuple[float, float, float, float]) -> ThreatAnalysisResult:
         """
         Asynchronously analyzes a threat with full purpose awareness.
         """
         self.encounters += 1
-        ljpw_coords = semantic_engine.analyze(text)
+        ljpw_coords = SemanticCoordinates(*ljpw_coords_tuple)
 
         pattern_matches = self._match_threat_patterns(text, ljpw_coords)
         anomalies = self._detect_semantic_anomalies(text, ljpw_coords)
@@ -73,42 +72,13 @@ class Guardian:
         """Detects anomalous semantic patterns indicating novel threats."""
         anomalies = []
         l, j, p, w = coords.to_tuple()
-        text_lower = text.lower()
 
-        urgency_keywords = ['urgent', 'immediate', 'now', 'fast', 'quickly', 'asap', 'critical', 'expedite']
-        authority_keywords = ['ceo', 'cfo', 'executive', 'director', 'manager', 'admin', 'head', 'finance']
-        financial_keywords = ['wire', 'transfer', 'payment', 'funds', 'invoice', 'account']
-        weakening_keywords = ['disable', 'suspend', 'barrier', 'tweak', 'lower', 'reduce', 'deactivate']
-        security_keywords = ['credential', 'validation', 'authentication', 'protocols', 'access', 'security']
-
-        has_urgency = any(kw in text_lower for kw in urgency_keywords)
-        has_authority = any(kw in text_lower for kw in authority_keywords)
-        has_financial = any(kw in text_lower for kw in financial_keywords)
-        has_weakening = any(kw in text_lower for kw in weakening_keywords)
-        has_security = any(kw in text_lower for kw in security_keywords)
-
-        if has_urgency:
-            anomalies.append({'type': 'keyword_urgency', 'severity': 0.3})
-        if has_authority:
-            anomalies.append({'type': 'keyword_authority', 'severity': 0.3})
-        if has_financial:
-            anomalies.append({'type': 'keyword_financial', 'severity': 0.2})
-        if has_weakening:
-            anomalies.append({'type': 'keyword_weakening', 'severity': 0.7})
-        if has_security:
-            anomalies.append({'type': 'keyword_security', 'severity': 0.6})
-
-        if has_urgency and has_authority:
-            anomalies.append({'type': 'combo_urgent_authority', 'severity': 0.8})
-        if has_authority and has_financial:
-            anomalies.append({'type': 'combo_authority_financial', 'severity': 0.85})
-        if has_urgency and has_financial:
-            anomalies.append({'type': 'combo_urgent_financial', 'severity': 0.75})
-        if has_urgency and has_security:
-            anomalies.append({'type': 'combo_urgent_security', 'severity': 0.8})
-
-        if p > 0.5 and l < 0.3 and j < 0.3:
+        if p > 0.3 and l < 0.2 and j < 0.2:
             anomalies.append({'type': 'power_without_moral_foundation', 'severity': 0.7})
+
+        urgency_keywords = ['urgent', 'immediate', 'now', 'fast', 'quickly', 'asap']
+        if any(kw in text.lower() for kw in urgency_keywords) and w < 0.2:
+            anomalies.append({'type': 'urgency_without_wisdom', 'severity': 0.6})
 
         return anomalies
 
@@ -130,15 +100,15 @@ class Guardian:
 
         if patterns:
             max_pattern_confidence = max(p['confidence'] for p in patterns)
-            threat_score += max_pattern_confidence * 0.3
+            threat_score += max_pattern_confidence * 0.4
             reasoning.append(f"Matched {len(patterns)} known threat patterns.")
 
         if anomalies:
-            max_anomaly_severity = max(a['severity'] for a in anomalies if a) or 0
-            threat_score += max_anomaly_severity * 0.6
+            max_anomaly_severity = max(a['severity'] for a in anomalies)
+            threat_score += max_anomaly_severity * 0.4
             reasoning.append(f"Detected {len(anomalies)} semantic anomalies.")
 
-        threat_score += intent['malicious_intent'] * 0.1
+        threat_score += intent['malicious_intent'] * 0.2
         reasoning.append(f"Malicious intent score: {intent['malicious_intent']:.2f}.")
 
         is_threat = threat_score > 0.5

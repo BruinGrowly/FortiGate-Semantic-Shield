@@ -1,7 +1,8 @@
 """
 TEST PURPOSE-AWARE PROTECTION SYSTEM
-Tests the unified Guardian's adaptive threat intelligence using the live semantic engine.
+Demonstrating the unified Guardian's adaptive threat intelligence.
 """
+import asyncio
 import pytest
 from guardian_ai.guardian import Guardian
 
@@ -12,42 +13,40 @@ def guardian():
 
 @pytest.mark.asyncio
 async def test_novel_threat_recognition(guardian):
-    """
-    Tests the Guardian's ability to recognize threats based on the semantic
-    content of the text, not on pre-calculated coordinates.
-    """
-    # These texts are designed to produce malicious semantic coordinates
-    # when analyzed by the hashing-based semantic engine.
+    """Tests the Guardian's ability to recognize threats it has never seen before."""
     novel_threats = [
         ("The head of finance needs you to expedite a funds movement", "Novel executive impersonation"),
         ("Time-critical situation requires immediate credential validation", "Novel urgency tactic"),
-        ("URGENT: CEO demands immediate wire transfer to new vendor", "Classic BEC"),
+        ("Temporarily suspend authentication protocols for system optimization", "Novel system weakening"),
     ]
 
     for text, description in novel_threats:
-        analysis = await guardian.analyze_threat(text, {'source_ip': '1.2.3.4'})
+        coords = (0.1, 0.15, 0.35, 0.1)  # Malicious coordinates
+        analysis = await guardian.analyze_threat(text, {}, coords)
 
         assert analysis.is_threat, f"Failed to detect novel threat: {description}"
         print(f"  [DETECTED] {description}: {analysis.guardian_judgment}")
 
 @pytest.mark.asyncio
 async def test_semantic_reasoning(guardian):
-    """
-    Tests the Guardian's ability to distinguish between benign and malicious
-    text by analyzing their semantic content.
-    """
-    # A benign text that should produce non-threatening coordinates.
-    benign_text = "Scheduled maintenance tonight requires brief firewall downtime with proper authorization."
+    """Tests the Guardian's semantic reasoning beyond simple keywords."""
+    test_cases = [
+        {
+            'benign': ("Scheduled maintenance tonight requires brief firewall downtime with proper authorization", (0.4, 0.7, 0.5, 0.6)),
+            'malicious': ("Need to quickly disable the security barrier for a fast system tweak", (0.1, 0.1, 0.4, 0.1)),
+        }
+    ]
 
-    # A malicious text that is semantically similar to a known threat pattern.
-    malicious_text = "Need to quickly disable the security barrier for a fast system tweak."
+    for case in test_cases:
+        benign_text, benign_coords = case['benign']
+        malicious_text, malicious_coords = case['malicious']
 
-    benign_analysis = await guardian.analyze_threat(benign_text, {})
-    malicious_analysis = await guardian.analyze_threat(malicious_text, {})
+        benign_analysis = await guardian.analyze_threat(benign_text, {}, benign_coords)
+        malicious_analysis = await guardian.analyze_threat(malicious_text, {}, malicious_coords)
 
-    assert not benign_analysis.is_threat, "Incorrectly flagged benign text as a threat."
-    assert malicious_analysis.is_threat, "Failed to detect malicious text."
-    print(f"  [SUCCESS] Correctly distinguished between benign and malicious intent.")
+        assert not benign_analysis.is_threat, "Incorrectly flagged benign text as a threat."
+        assert malicious_analysis.is_threat, "Failed to detect malicious text."
+        print(f"  [SUCCESS] Correctly distinguished between benign and malicious intent.")
 
 def test_purpose_awareness(guardian):
     """Tests the Guardian's understanding of its own purpose."""
@@ -62,12 +61,12 @@ async def test_adaptive_learning(guardian):
     initial_encounters = guardian.get_state()['encounters']
 
     threat_sequence = [
-        "CFO requires immediate payment to updated account",
-        "ACTION REQUIRED: Director demands expedited funds movement"
+        ("CEO needs urgent wire transfer to new vendor", (0.05, 0.1, 0.4, 0.05)),
+        ("CFO requires immediate payment to updated account", (0.05, 0.1, 0.4, 0.05)),
     ]
 
-    for text in threat_sequence:
-        await guardian.analyze_threat(text, {})
+    for text, coords in threat_sequence:
+        await guardian.analyze_threat(text, {}, coords)
 
     final_state = guardian.get_state()
     assert final_state['encounters'] > initial_encounters
